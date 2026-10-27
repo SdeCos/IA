@@ -1,0 +1,34 @@
+# Archivos del sistema y temporales del editor
+.DS_Store
+._*
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Entornos y cachés de Python
+.venv/
+.venv-*/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+*.egg-info/
+.ipynb_checkpoints/
+
+# Credenciales locales (conservar las plantillas de ejemplo)
+.env
+.env.*
+!.env.example
+!.env.sample
+.streamlit/secrets.toml
+
+# Artefactos temporales de trabajo
+/tmp/
+*.log

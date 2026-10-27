@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "ancho_procesado": 800,
+  "parametros": {
+    "h_min": 80,
+    "h_max": 100,
+    "s_min": 100,
+    "s_max": 255,
+    "v_min": 40,
+    "v_max": 255,
+    "apertura": 0,
+    "cierre": 1,
+    "kernel": 3,
+    "suavizado": 3,
+    "area_min": 1000,
+    "zoom": 100
+  }
+}

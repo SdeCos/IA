@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.venv-web/
+venv/
+.DS_Store
+
+# Datos locales de adquisición y sesiones generadas.
+# Incluyen imágenes, vídeos, etiquetas de sesión, ajustes y CSV asociados.
+/capturas/
+/videos/
+/resultados/
+/etiquetas/
