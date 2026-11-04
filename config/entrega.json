@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "clases": [
+    "Martillo",
+    "Destornillador",
+    "Alicate",
+    "Calibre",
+    "Nivel",
+    "Metro",
+    "Desbarbador manual"
+  ],
+  "esperadas": {
+    "Martillo": 1,
+    "Destornillador": 1,
+    "Alicate": 1,
+    "Calibre": 1,
+    "Nivel": 1,
+    "Metro": 1,
+    "Desbarbador manual": 1
+  }
+}

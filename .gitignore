@@ -32,3 +32,10 @@ htmlcov/
 # Artefactos temporales de trabajo
 /tmp/
 *.log
+
+
+# Datos locales de adquisición y sesiones generadas.
+# Incluyen imágenes, vídeos, etiquetas de sesión, ajustes y CSV asociados.
+/datos/*
+!/datos/README.md
+/respaldos/

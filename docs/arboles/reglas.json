@@ -1,0 +1,788 @@
+{
+  "version_clasificador": "reglas-manuales-v4",
+  "version_caracteristicas": "geometria-v1",
+  "metodo": "reglas geométricas conjuntas escritas a mano; sin entrenamiento",
+  "grupos_desarrollo": [
+    "20261016_113207_730520",
+    "20261016_113218_711279",
+    "20261016_113231_782061",
+    "20261103_105450_737590",
+    "20261104_094956_247121",
+    "20261104_095003_821991",
+    "20261104_095010_020653",
+    "20261104_095013_401274",
+    "20261104_095023_630156",
+    "20261104_102859_144379",
+    "20261104_103349_557161",
+    "20261104_103353_857747",
+    "20261104_103404_584926",
+    "20261104_103425_508422",
+    "20261104_105257_111065",
+    "20261104_105301_926831",
+    "20261104_105305_963379",
+    "20261104_105311_698211",
+    "20261104_105316_762600",
+    "20261104_105323_082186",
+    "20261104_105829_616957",
+    "20261104_105833_821833",
+    "20261104_105837_075797",
+    "20261104_105840_625304",
+    "20261104_105850_173775",
+    "20261104_105855_044307",
+    "20261104_105913_453351",
+    "20261104_105916_188682",
+    "20261104_105918_553556",
+    "20261104_105921_352552",
+    "20261104_105924_027623",
+    "20261104_105939_966064",
+    "20261104_105945_082702",
+    "20261104_105948_189810",
+    "20261104_105953_191946",
+    "20261104_105957_804729",
+    "20261104_110002_629347",
+    "20261104_110005_746186",
+    "20261104_110009_107171",
+    "20261104_110055_740642",
+    "20261104_110328_838083",
+    "20261104_110333_429041",
+    "20261104_110336_655837",
+    "20261104_110340_922857",
+    "20261104_112432_766413",
+    "20261104_112436_408035",
+    "20261104_112444_741847",
+    "20261104_112449_771294",
+    "20261104_112501_188719",
+    "20261104_112503_634874",
+    "20261104_112505_862926",
+    "20261104_112508_706545",
+    "20261104_112511_434291",
+    "20261104_112518_681229",
+    "20261104_112522_652345",
+    "video_2eaa614e1f7fa5ba99870b79f3a729103af094aabe85cf620c98fa42b98aca91"
+  ],
+  "clases_soportadas": [
+    "Metro",
+    "Cuter",
+    "Nivel",
+    "Desbarbador manual",
+    "Destornillador",
+    "Calibre",
+    "Martillo",
+    "Juego de llaves Allen",
+    "Alicate"
+  ],
+  "criterio": "Una única clase compatible y al menos una de sus reglas con todas las condiciones interiores. Varias variantes de la misma clase no son una confusión entre clases.",
+  "banda_abstencion": {
+    "relacion_aspecto": 0.15,
+    "otros_cocientes": 0.02,
+    "excepcion": "No se aplica banda en los límites físicos 0/1; AR mínimo físico 1."
+  },
+  "reglas": [
+    {
+      "regla": "R1",
+      "clase": "Metro",
+      "descripcion": "cuerpo compacto casi cuadrado y convexo, con extremos similares",
+      "condiciones": [
+        {
+          "caracteristica": "relacion_aspecto",
+          "minimo": 1.0,
+          "maximo": 2.2
+        },
+        {
+          "caracteristica": "solidez",
+          "minimo": 0.9,
+          "maximo": 1.0
+        },
+        {
+          "caracteristica": "circularidad",
+          "minimo": 0.65,
+          "maximo": 0.9
+        },
+        {
+          "caracteristica": "extension",
+          "minimo": 0.75,
+          "maximo": 1.0
+        },
+        {
+          "caracteristica": "contraste_extremos",
+          "minimo": 0.0,
+          "maximo": 0.25
+        },
+        {
+          "caracteristica": "fraccion_ancha",
+          "minimo": 0.85,
+          "maximo": 1.0
+        },
+        {
+          "caracteristica": "asimetria_longitudinal",
+          "minimo": 0.0,
+          "maximo": 0.2
+        },
+        {
+          "caracteristica": "ancho_central",
+          "minimo": 0.8,
+          "maximo": 1.0
+        }
+      ]
+    },
+    {
+      "regla": "R2",
+      "clase": "Cuter",
+      "descripcion": "cuerpo convexo de longitud moderada, ancho en el centro y casi simétrico",
+      "condiciones": [
+        {
+          "caracteristica": "relacion_aspecto",
+          "minimo": 2.0,
+          "maximo": 3.8
+        },
+        {
+          "caracteristica": "solidez",
+          "minimo": 0.85,
+          "maximo": 1.0
+        },
+        {
+          "caracteristica": "circularidad",
+          "minimo": 0.4,
+          "maximo": 0.65
+        },
+        {
+          "caracteristica": "extension",
+          "minimo": 0.65,
+          "maximo": 0.88
+        },
+        {
+          "caracteristica": "contraste_extremos",
+          "minimo": 0.0,
+          "maximo": 0.25
+        },
+        {
+          "caracteristica": "fraccion_ancha",
+          "minimo": 0.8,
+          "maximo": 1.0
+        },
+        {
+          "caracteristica": "asimetria_longitudinal",
+          "minimo": 0.0,
+          "maximo": 0.2
+        },
+        {
+          "caracteristica": "ancho_central",
+          "minimo": 0.8,
+          "maximo": 1.0
+        }
+      ]
+    },
+    {
+      "regla": "R3",
+      "clase": "Nivel",
+      "descripcion": "cuerpo largo, casi rectangular y de anchura uniforme",
+      "condiciones": [
+        {
+          "caracteristica": "relacion_aspecto",
+          "minimo": 4.0,
+          "maximo": 6.5
+        },
+        {
+          "caracteristica": "solidez",
+          "minimo": 0.9,
+          "maximo": 1.0
+        },
+        {
+          "caracteristica": "circularidad",
+          "minimo": 0.25,
+          "maximo": 0.5
+        },
+        {
+          "caracteristica": "extension",
+          "minimo": 0.85,
+          "maximo": 1.0
+        },
+        {
+          "caracteristica": "contraste_extremos",
+          "minimo": 0.0,
+          "maximo": 0.15
+        },
+        {
+          "caracteristica": "fraccion_ancha",
+          "minimo": 0.9,
+          "maximo": 1.0
+        },
+        {
+          "caracteristica": "asimetria_longitudinal",
+          "minimo": 0.0,
+          "maximo": 0.12
+        },
+        {
+          "caracteristica": "ancho_central",
+          "minimo": 0.8,
+          "maximo": 1.0
+        }
+      ]
+    },
+    {
+      "regla": "R4",
+      "clase": "Desbarbador manual",
+      "descripcion": "cuerpo muy alargado con mango ancho en casi toda su longitud y punta fina",
+      "condiciones": [
+        {
+          "caracteristica": "relacion_aspecto",
+          "minimo": 8.5,
+          "maximo": 14.0
+        },
+        {
+          "caracteristica": "solidez",
+          "minimo": 0.7,
+          "maximo": 0.95
+        },
+        {
+          "caracteristica": "circularidad",
+          "minimo": 0.1,
+          "maximo": 0.25
+        },
+        {
+          "caracteristica": "extension",
+          "minimo": 0.55,
+          "maximo": 0.85
+        },
+        {
+          "caracteristica": "contraste_extremos",
+          "minimo": 0.55,
+          "maximo": 0.95
+        },
+        {
+          "caracteristica": "fraccion_ancha",
+          "minimo": 0.65,
+          "maximo": 0.9
+        },
+        {
+          "caracteristica": "asimetria_longitudinal",
+          "minimo": 0.15,
+          "maximo": 0.5
+        },
+        {
+          "caracteristica": "ancho_central",
+          "minimo": 0.7,
+          "maximo": 1.0
+        }
+      ]
+    },
+    {
+      "regla": "R5",
+      "clase": "Destornillador",
+      "descripcion": "mango ancho y vástago largo, fino y muy distinto del extremo opuesto",
+      "condiciones": [
+        {
+          "caracteristica": "relacion_aspecto",
+          "minimo": 5.5,
+          "maximo": 9.0
+        },
+        {
+          "caracteristica": "solidez",
+          "minimo": 0.5,
+          "maximo": 0.78
+        },
+        {
+          "caracteristica": "circularidad",
+          "minimo": 0.08,
+          "maximo": 0.2
+        },
+        {
+          "caracteristica": "extension",
+          "minimo": 0.25,
+          "maximo": 0.5
+        },
+        {
+          "caracteristica": "contraste_extremos",
+          "minimo": 0.7,
+          "maximo": 1.0
+        },
+        {
+          "caracteristica": "fraccion_ancha",
+          "minimo": 0.3,
+          "maximo": 0.55
+        },
+        {
+          "caracteristica": "asimetria_longitudinal",
+          "minimo": 0.4,
+          "maximo": 0.75
+        },
+        {
+          "caracteristica": "ancho_central",
+          "minimo": 0.12,
+          "maximo": 0.45
+        }
+      ]
+    },
+    {
+      "regla": "R6",
+      "clase": "Calibre",
+      "descripcion": "mordazas y regla estrecha, cerrado o abierto, con alto contraste entre extremos y poca longitud ancha",
+      "condiciones": [
+        {
+          "caracteristica": "relacion_aspecto",
+          "minimo": 2.5,
+          "maximo": 6.0
+        },
+        {
+          "caracteristica": "solidez",
+          "minimo": 0.28,
+          "maximo": 0.65
+        },
+        {
+          "caracteristica": "circularidad",
+          "minimo": 0.04,
+          "maximo": 0.25
+        },
+        {
+          "caracteristica": "extension",
+          "minimo": 0.18,
+          "maximo": 0.43
+        },
+        {
+          "caracteristica": "contraste_extremos",
+          "minimo": 0.55,
+          "maximo": 0.85
+        },
+        {
+          "caracteristica": "fraccion_ancha",
+          "minimo": 0.06,
+          "maximo": 0.3
+        },
+        {
+          "caracteristica": "asimetria_longitudinal",
+          "minimo": 0.12,
+          "maximo": 0.35
+        },
+        {
+          "caracteristica": "ancho_central",
+          "minimo": 0.12,
+          "maximo": 0.55
+        }
+      ]
+    },
+    {
+      "regla": "R7",
+      "clase": "Martillo",
+      "descripcion": "cabeza ancha y mango de anchura intermedia, con contraste moderado",
+      "condiciones": [
+        {
+          "caracteristica": "relacion_aspecto",
+          "minimo": 2.5,
+          "maximo": 4.5
+        },
+        {
+          "caracteristica": "solidez",
+          "minimo": 0.35,
+          "maximo": 0.65
+        },
+        {
+          "caracteristica": "circularidad",
+          "minimo": 0.1,
+          "maximo": 0.27
+        },
+        {
+          "caracteristica": "extension",
+          "minimo": 0.25,
+          "maximo": 0.48
+        },
+        {
+          "caracteristica": "contraste_extremos",
+          "minimo": 0.25,
+          "maximo": 0.55
+        },
+        {
+          "caracteristica": "fraccion_ancha",
+          "minimo": 0.1,
+          "maximo": 0.32
+        },
+        {
+          "caracteristica": "asimetria_longitudinal",
+          "minimo": 0.06,
+          "maximo": 0.25
+        },
+        {
+          "caracteristica": "ancho_central",
+          "minimo": 0.28,
+          "maximo": 0.45
+        }
+      ]
+    },
+    {
+      "regla": "R8",
+      "clase": "Juego de llaves Allen",
+      "descripcion": "conjunto ancho y ramificado, con centro ancho y asimetría moderada",
+      "condiciones": [
+        {
+          "caracteristica": "relacion_aspecto",
+          "minimo": 2.3,
+          "maximo": 4.3
+        },
+        {
+          "caracteristica": "solidez",
+          "minimo": 0.6,
+          "maximo": 0.82
+        },
+        {
+          "caracteristica": "circularidad",
+          "minimo": 0.07,
+          "maximo": 0.22
+        },
+        {
+          "caracteristica": "extension",
+          "minimo": 0.4,
+          "maximo": 0.65
+        },
+        {
+          "caracteristica": "contraste_extremos",
+          "minimo": 0.2,
+          "maximo": 0.55
+        },
+        {
+          "caracteristica": "fraccion_ancha",
+          "minimo": 0.65,
+          "maximo": 0.9
+        },
+        {
+          "caracteristica": "asimetria_longitudinal",
+          "minimo": 0.07,
+          "maximo": 0.28
+        },
+        {
+          "caracteristica": "ancho_central",
+          "minimo": 0.55,
+          "maximo": 0.85
+        }
+      ]
+    },
+    {
+      "regla": "R9",
+      "clase": "Alicate",
+      "descripcion": "mordaza y mangos ramificados, con distintas aperturas y marcada asimetría longitudinal",
+      "condiciones": [
+        {
+          "caracteristica": "relacion_aspecto",
+          "minimo": 1.0,
+          "maximo": 4.0
+        },
+        {
+          "caracteristica": "solidez",
+          "minimo": 0.28,
+          "maximo": 0.78
+        },
+        {
+          "caracteristica": "circularidad",
+          "minimo": 0.08,
+          "maximo": 0.25
+        },
+        {
+          "caracteristica": "extension",
+          "minimo": 0.18,
+          "maximo": 0.65
+        },
+        {
+          "caracteristica": "contraste_extremos",
+          "minimo": 0.55,
+          "maximo": 0.85
+        },
+        {
+          "caracteristica": "fraccion_ancha",
+          "minimo": 0.5,
+          "maximo": 0.82
+        },
+        {
+          "caracteristica": "asimetria_longitudinal",
+          "minimo": 0.3,
+          "maximo": 0.6
+        },
+        {
+          "caracteristica": "ancho_central",
+          "minimo": 0.54,
+          "maximo": 0.95
+        }
+      ]
+    },
+    {
+      "regla": "R10",
+      "clase": "Martillo",
+      "descripcion": "vista de canto: mango largo, cabeza poco saliente y perfil de baja asimetría",
+      "condiciones": [
+        {
+          "caracteristica": "relacion_aspecto",
+          "minimo": 6.5,
+          "maximo": 12.0
+        },
+        {
+          "caracteristica": "solidez",
+          "minimo": 0.6,
+          "maximo": 0.84
+        },
+        {
+          "caracteristica": "circularidad",
+          "minimo": 0.12,
+          "maximo": 0.24
+        },
+        {
+          "caracteristica": "extension",
+          "minimo": 0.48,
+          "maximo": 0.8
+        },
+        {
+          "caracteristica": "contraste_extremos",
+          "minimo": 0.0,
+          "maximo": 0.3
+        },
+        {
+          "caracteristica": "fraccion_ancha",
+          "minimo": 0.55,
+          "maximo": 1.0
+        },
+        {
+          "caracteristica": "asimetria_longitudinal",
+          "minimo": 0.07,
+          "maximo": 0.21
+        },
+        {
+          "caracteristica": "ancho_central",
+          "minimo": 0.43,
+          "maximo": 0.75
+        }
+      ]
+    },
+    {
+      "regla": "R11",
+      "clase": "Nivel",
+      "descripcion": "vista de canto: rectángulo muy estrecho, sólido y de anchura uniforme",
+      "condiciones": [
+        {
+          "caracteristica": "relacion_aspecto",
+          "minimo": 7.0,
+          "maximo": 15.0
+        },
+        {
+          "caracteristica": "solidez",
+          "minimo": 0.88,
+          "maximo": 1.0
+        },
+        {
+          "caracteristica": "circularidad",
+          "minimo": 0.14,
+          "maximo": 0.3
+        },
+        {
+          "caracteristica": "extension",
+          "minimo": 0.8,
+          "maximo": 0.96
+        },
+        {
+          "caracteristica": "contraste_extremos",
+          "minimo": 0.0,
+          "maximo": 0.2
+        },
+        {
+          "caracteristica": "fraccion_ancha",
+          "minimo": 0.85,
+          "maximo": 1.0
+        },
+        {
+          "caracteristica": "asimetria_longitudinal",
+          "minimo": 0.0,
+          "maximo": 0.14
+        },
+        {
+          "caracteristica": "ancho_central",
+          "minimo": 0.85,
+          "maximo": 1.0
+        }
+      ]
+    },
+    {
+      "regla": "R12",
+      "clase": "Metro",
+      "descripcion": "cinta extendida estrecha: carcasa ancha y prolongación central muy fina",
+      "condiciones": [
+        {
+          "caracteristica": "relacion_aspecto",
+          "minimo": 2.2,
+          "maximo": 10.0
+        },
+        {
+          "caracteristica": "solidez",
+          "minimo": 0.25,
+          "maximo": 0.68
+        },
+        {
+          "caracteristica": "circularidad",
+          "minimo": 0.025,
+          "maximo": 0.3
+        },
+        {
+          "caracteristica": "extension",
+          "minimo": 0.13,
+          "maximo": 0.45
+        },
+        {
+          "caracteristica": "contraste_extremos",
+          "minimo": 0.65,
+          "maximo": 1.0
+        },
+        {
+          "caracteristica": "fraccion_ancha",
+          "minimo": 0.08,
+          "maximo": 0.48
+        },
+        {
+          "caracteristica": "asimetria_longitudinal",
+          "minimo": 0.17,
+          "maximo": 0.78
+        },
+        {
+          "caracteristica": "ancho_central",
+          "minimo": 0.0,
+          "maximo": 0.14
+        }
+      ]
+    },
+    {
+      "regla": "R13",
+      "clase": "Metro",
+      "descripcion": "cinta corta de canto: carcasa dominante y extremo fino muy asimétrico",
+      "condiciones": [
+        {
+          "caracteristica": "relacion_aspecto",
+          "minimo": 1.0,
+          "maximo": 2.2
+        },
+        {
+          "caracteristica": "solidez",
+          "minimo": 0.78,
+          "maximo": 0.91
+        },
+        {
+          "caracteristica": "circularidad",
+          "minimo": 0.45,
+          "maximo": 0.61
+        },
+        {
+          "caracteristica": "extension",
+          "minimo": 0.55,
+          "maximo": 0.72
+        },
+        {
+          "caracteristica": "contraste_extremos",
+          "minimo": 0.88,
+          "maximo": 1.0
+        },
+        {
+          "caracteristica": "fraccion_ancha",
+          "minimo": 0.65,
+          "maximo": 0.82
+        },
+        {
+          "caracteristica": "asimetria_longitudinal",
+          "minimo": 0.32,
+          "maximo": 0.57
+        },
+        {
+          "caracteristica": "ancho_central",
+          "minimo": 0.85,
+          "maximo": 1.0
+        }
+      ]
+    },
+    {
+      "regla": "R14",
+      "clase": "Metro",
+      "descripcion": "cinta plana corta: carcasa dominante y sólida, centro ancho y extremos distintos",
+      "condiciones": [
+        {
+          "caracteristica": "relacion_aspecto",
+          "minimo": 2.3,
+          "maximo": 4.6
+        },
+        {
+          "caracteristica": "solidez",
+          "minimo": 0.8,
+          "maximo": 1.0
+        },
+        {
+          "caracteristica": "circularidad",
+          "minimo": 0.34,
+          "maximo": 0.6
+        },
+        {
+          "caracteristica": "extension",
+          "minimo": 0.65,
+          "maximo": 0.85
+        },
+        {
+          "caracteristica": "contraste_extremos",
+          "minimo": 0.35,
+          "maximo": 0.62
+        },
+        {
+          "caracteristica": "fraccion_ancha",
+          "minimo": 0.48,
+          "maximo": 0.82
+        },
+        {
+          "caracteristica": "asimetria_longitudinal",
+          "minimo": 0.24,
+          "maximo": 0.45
+        },
+        {
+          "caracteristica": "ancho_central",
+          "minimo": 0.6,
+          "maximo": 1.0
+        }
+      ]
+    },
+    {
+      "regla": "R15",
+      "clase": "Metro",
+      "descripcion": "cinta plana larga: banda de anchura intermedia y carcasa en un extremo",
+      "condiciones": [
+        {
+          "caracteristica": "relacion_aspecto",
+          "minimo": 3.8,
+          "maximo": 20.0
+        },
+        {
+          "caracteristica": "solidez",
+          "minimo": 0.63,
+          "maximo": 0.9
+        },
+        {
+          "caracteristica": "circularidad",
+          "minimo": 0.04,
+          "maximo": 0.44
+        },
+        {
+          "caracteristica": "extension",
+          "minimo": 0.4,
+          "maximo": 0.72
+        },
+        {
+          "caracteristica": "contraste_extremos",
+          "minimo": 0.35,
+          "maximo": 0.68
+        },
+        {
+          "caracteristica": "fraccion_ancha",
+          "minimo": 0.07,
+          "maximo": 0.65
+        },
+        {
+          "caracteristica": "asimetria_longitudinal",
+          "minimo": 0.1,
+          "maximo": 0.45
+        },
+        {
+          "caracteristica": "ancho_central",
+          "minimo": 0.34,
+          "maximo": 0.84
+        }
+      ]
+    }
+  ],
+  "limitacion": "Reglas revisadas con capturas etiquetadas de aperturas y vistas de canto; todos los grupos consultados son desarrollo. Falta evaluación independiente. Otras siluetas similares pueden cumplir estas reglas; no se garantizan todas las configuraciones ni oclusiones."
+}
