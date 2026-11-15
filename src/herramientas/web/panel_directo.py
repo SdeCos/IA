@@ -1,5 +1,6 @@
 """Vista de demostración: cámara local o vídeo, sin entrenar ni confirmar etiquetas."""
 from datetime import datetime
+import json
 from pathlib import Path
 
 import cv2
@@ -8,19 +9,81 @@ import streamlit as st
 from herramientas.cli.calibrador import guardar_captura
 from herramientas.cli.detector import exportar_resultado
 from herramientas.datos.configuracion import cargar_configuracion, guardar_configuracion
-from herramientas.datos.entrega import cargar_perfil
+from herramientas.datos.entrega import cargar_perfil, escribir_json
 from herramientas.datos.nombres import guardar_nombre, validar_nombre
 from herramientas.media.directo_web import DirectoWeb
-from herramientas.media.video import listar_videos, configuracion_para_video, exportar_fotograma
+from herramientas.media.video import listar_videos, configuracion_para_video, exportar_fotograma, inspeccionar_video
 from herramientas.web.panel_video import vista_video
 from herramientas.vision.reconocimiento import exportar_predicciones
 from herramientas.vision.clasificacion import VERSION_CLASIFICADOR
+
+CAMARA_USB = 'iPhone por USB'
+AYUDA_USB = 'Conecta el iPhone con un cable de datos y acepta «Confiar» si aparece. El transporte lo gestiona Cámara de Continuidad de macOS.'
 
 
 def detener_directo():
     controlador = st.session_state.get('directo_controlador')
     if controlador and controlador.activo:
         controlador.detener()
+
+
+def ajustes_de_fuente(base, ruta):
+    if ruta is None:
+        return cargar_configuracion()
+    ajustes = base/'datos/videos/ajustes'/f"{inspeccionar_video(ruta)['huella']}.json"
+    return cargar_configuracion(ajustes) if ajustes.is_file() else configuracion_para_video(ruta)
+
+
+def indice_de_camara(base):
+    if 'indice_camara_directo' not in st.session_state:
+        ruta = base/'config/camara.json'
+        indice = json.loads(ruta.read_text(encoding='utf-8')) if ruta.is_file() else 1
+        if type(indice) is not int or not 0 <= indice <= 20:
+            raise ValueError('El índice guardado en config/camara.json debe estar entre 0 y 20.')
+        st.session_state['indice_camara_directo'] = indice
+    return st.session_state['indice_camara_directo']
+
+
+def iniciar_flujo(base, valores, esperadas, *, camara=1, video=None):
+    controlador = DirectoWeb(base, valores, esperadas, camara=camara, video=video)
+    st.session_state['directo_controlador'] = controlador
+    for clave in ('directo_visible', 'directo_foto', 'directo_exportado'):
+        st.session_state.pop(clave, None)
+    controlador.iniciar()
+    st.rerun()
+
+
+def mostrar_presentacion(base):
+    base = Path(base)
+    st.html("""<style>
+      [data-testid="stHeader"] {visibility:hidden;}
+      [data-testid="stMainBlockContainer"] {padding-top:1.5rem;}
+      [data-testid="stImage"] img {max-height:60vh; object-fit:contain;}
+      [data-testid="stTable"] :is(th, td) {padding:.35rem .45rem;}
+    </style>""")
+    perfil = cargar_perfil(base)
+    if perfil is None:
+        st.warning('Guarda el inventario esperado en la pestaña Entrega antes de iniciar.')
+        return
+    controlador = st.session_state.get('directo_controlador')
+    activo = bool(controlador and controlador.activo)
+    if not activo:
+        videos = listar_videos(base)
+        fuente = st.selectbox(
+            'Fuente', [None, CAMARA_USB, *videos],
+            format_func=lambda p: str(p.relative_to(base/'datos/videos')) if isinstance(p, Path)
+            else p or 'Cámara en directo',
+            key='presentacion_fuente',
+        )
+        ruta = fuente if isinstance(fuente, Path) else None
+        if fuente == CAMARA_USB:
+            st.caption(AYUDA_USB)
+        if st.button('Iniciar', type='primary', key='presentacion_iniciar'):
+            iniciar_flujo(base, ajustes_de_fuente(base, ruta), perfil['esperadas'],
+                          camara=indice_de_camara(base) if ruta is None else 1, video=ruta)
+    if controlador is not None:
+        refresco = st.fragment(run_every=.2 if activo else None)(_mostrar_flujo)
+        refresco(base, controlador, '', False, activo, presentacion=True)
 
 
 def guardar_instante(base, controlador, instante, nombre, medidas=False):
@@ -50,7 +113,7 @@ def mostrar_directo(base, controles_ajustes):
     st.subheader('En directo')
     st.caption(f'{VERSION_CLASIFICADOR} · la cámara se abre solo al pulsar Iniciar.')
     with st.sidebar.expander('Fuente y captura', expanded=not activo):
-        fuente = st.radio('Fuente del directo', ['Cámara del Mac / iPhone', 'Vídeo de prueba'],
+        fuente = st.radio('Fuente del directo', ['Cámara del Mac / iPhone', CAMARA_USB, 'Vídeo de prueba'],
                           key='directo_fuente', disabled=activo)
         ruta = None
         camara = 1
@@ -62,9 +125,12 @@ def mostrar_directo(base, controles_ajustes):
             else:
                 st.info('Añade un vídeo desde Vídeos para probar sin cámara.')
         else:
-            camara = st.number_input('Índice de cámara', min_value=0, max_value=20, value=1,
+            if fuente == CAMARA_USB:
+                st.caption(AYUDA_USB)
+            camara = st.number_input('Índice de cámara', min_value=0, max_value=20, value=indice_de_camara(base),
                                      step=1, disabled=activo)
-            st.caption('En tu montaje: iPhone disponible en Photo Booth y cámara 1.')
+            st.session_state['indice_camara_directo'] = camara
+            st.caption('Presentación usa esta misma cámara.')
         nombre = st.text_input('Nombre de las capturas', max_chars=80, key='directo_nombre',
                                placeholder='Alicate abierto')
         comparar = st.checkbox('Usar inventario de Entrega', value=True, disabled=activo)
@@ -78,12 +144,7 @@ def mostrar_directo(base, controles_ajustes):
         st.session_state.pop('directo_visible', None)
         st.session_state.pop('directo_foto', None)
         st.session_state.pop('directo_exportado', None)
-        perfil_video = None
-        if ruta:
-            from herramientas.media.video import inspeccionar_video
-            perfil_video = base/'datos/videos/ajustes'/f"{inspeccionar_video(ruta)['huella']}.json"
-        sesion['valores'] = (cargar_configuracion(perfil_video) if perfil_video and perfil_video.exists()
-                            else configuracion_para_video(ruta) if ruta else cargar_configuracion())
+        sesion['valores'] = ajustes_de_fuente(base, ruta)
         st.session_state['directo_clave_ajustes'] = clave
         st.session_state['directo_revision_ajustes'] = st.session_state.get('directo_revision_ajustes', 0) + 1
     nuevos = controles_ajustes(sesion, 'directo_' + str(st.session_state.get('directo_revision_ajustes', 0)))
@@ -98,23 +159,18 @@ def mostrar_directo(base, controles_ajustes):
     if st.sidebar.button('Guardar ajustes del directo'):
         destino = base/'config/configuracion.json'
         if ruta:
-            from herramientas.media.video import inspeccionar_video
             destino = base/'datos/videos/ajustes'/f"{inspeccionar_video(ruta)['huella']}.json"
         guardar_configuracion(sesion['valores'], destino)
+        if fuente != 'Vídeo de prueba':
+            escribir_json(base/'config/camara.json', camara)
         st.sidebar.success('Ajustes guardados.')
     if not activo:
         if st.button('Iniciar', type='primary', disabled=fuente == 'Vídeo de prueba' and ruta is None):
             try:
                 validar_nombre(nombre)
                 perfil = cargar_perfil(base) if comparar else None
-                controlador = DirectoWeb(base, sesion['valores'], perfil['esperadas'] if perfil else None,
-                                         camara=camara, video=ruta)
-                st.session_state['directo_controlador'] = controlador
-                st.session_state.pop('directo_visible', None)
-                st.session_state.pop('directo_foto', None)
-                st.session_state.pop('directo_exportado', None)
-                controlador.iniciar()
-                st.rerun()
+                iniciar_flujo(base, sesion['valores'], perfil['esperadas'] if perfil else None,
+                              camara=camara, video=ruta)
             except (OSError, ValueError, RuntimeError, cv2.error) as error:
                 st.error(str(error))
     mascara = st.toggle('Mostrar máscara', value=False, key='directo_mascara')
@@ -125,15 +181,21 @@ def mostrar_directo(base, controles_ajustes):
     refresco(base, controlador, nombre, mascara, activo)
 
 
-def _mostrar_flujo(base, controlador, nombre, mascara, estaba_activo):
+def _mostrar_flujo(base, controlador, nombre, mascara, estaba_activo, presentacion=False):
     controlador.latido()
     estado = controlador.estado()
     if estaba_activo and not estado['activo']:
         st.rerun()
+    if presentacion and not estado['activo']:
+        if estado['error']:
+            st.error(estado['error'])
+            if controlador.video is None:
+                st.caption('Comprueba el permiso de Cámara de la Terminal y el índice en En directo → Fuente y captura.')
+        return
     # Los botones operan sobre el último fotograma enviado al navegador.
     visible = st.session_state.get('directo_visible')
-    acciones = st.columns(4)
-    if acciones[0].button('Detener', disabled=not estado['activo'], key='directo_detener'):
+    acciones = st.columns(3 if presentacion else 4)
+    if estado['activo'] and acciones[0].button('Detener', key='directo_detener'):
         controlador.detener()
         st.rerun()
     if controlador.video:
@@ -143,13 +205,57 @@ def _mostrar_flujo(base, controlador, nombre, mascara, estaba_activo):
             controlador.pausar(not pausado)
         if acciones[2].button('Reiniciar vídeo', disabled=not estado['activo']):
             controlador.reiniciar()
-    else:
+    elif not presentacion:
         grabando = estado['grabar_solicitado']
         if acciones[1].button('Finalizar grabación' if grabando else 'Grabar vídeo',
                               disabled=not estado['activo'] or visible is None,
                               key='directo_fin_grabar' if grabando else 'directo_grabar'):
             controlador.grabar(not grabando)
-    foto = acciones[3].button('Guardar foto', disabled=visible is None, key='directo_guardar')
+    if not presentacion:
+        foto = acciones[3].button('Guardar foto', disabled=visible is None, key='directo_guardar')
+        _guardar_desde_flujo(base, controlador, nombre, estado, visible, foto)
+    if estado['error']:
+        st.error(estado['error'])
+    if presentacion:
+        if controlador.video and estado['pausado']:
+            st.caption('Fin del vídeo' if estado['mensaje'].startswith('Fin del vídeo') else 'Vídeo de prueba · pausado')
+        else:
+            st.caption('Vídeo de prueba' if controlador.video else 'Cámara en directo')
+    else:
+        st.caption(estado['mensaje'] + (' · ● Grabando vídeo limpio' if estado['grabando'] else ''))
+    paquete = estado['ultimo']
+    if paquete is None or (presentacion and estado['mensaje'].startswith('Esperando imagen')):
+        st.info('Esperando imagen…')
+        return
+    st.session_state['directo_visible'] = paquete
+    imagen, resumen = st.columns([2, 1] if presentacion else [3, 1.25])
+    with imagen:
+        oclusiones = paquete.get('oclusiones', ()) if estado['activo'] else ()
+        st.image(vista_video(paquete['resultado'], paquete['objetos'], presentacion=presentacion,
+                            oclusiones=oclusiones),
+                 channels='BGR', width='stretch')
+        if mascara:
+            st.image(paquete['resultado']['mascara'], caption='Máscara de objetos', width='stretch')
+    with resumen:
+        tapete = paquete['resultado']['tapete']
+        if tapete['activo'] and not tapete['detectado']:
+            st.warning('Inventario sin comprobar. El tapete está fuera de la zona visible o no se ha podido delimitar.')
+        else:
+            mostrar_inventario(paquete['inventario'])
+        if not presentacion:
+            st.caption(f"Procesamiento: {paquete['fps']:.1f} FPS" +
+                       (f" · Fotograma {paquete['indice']}" if controlador.video else ''))
+    if not presentacion:
+        for aviso in paquete['resultado']['avisos']:
+            st.warning(aviso)
+        with st.expander('Por qué se reconoce cada herramienta'):
+            st.dataframe([{'Pista': o['id_pista'], 'Herramienta': o['clase_predicha'],
+                           'Regla': o['regla'], 'Explicación': o['explicacion']} for o in paquete['objetos']],
+                         hide_index=True, width='stretch')
+            st.caption('Predicciones por reglas clásicas. Guardar fotos o vídeo no confirma etiquetas.')
+
+
+def _guardar_desde_flujo(base, controlador, nombre, estado, visible, foto):
     with st.expander('Guardar medidas y revisar capturas'):
         medidas = st.button('Exportar foto y CSV', disabled=visible is None)
         if st.session_state.get('directo_foto'):
@@ -171,37 +277,44 @@ def _mostrar_flujo(base, controlador, nombre, mascara, estaba_activo):
             st.toast('Foto y medidas guardadas' if medidas else 'Foto guardada')
         except (OSError, ValueError, cv2.error) as error:
             st.error(f'No se pudo guardar: {error}')
-    if estado['error']:
-        st.error(estado['error'])
-    st.caption(estado['mensaje'] + (' · ● Grabando vídeo limpio' if estado['grabando'] else ''))
-    paquete = estado['ultimo']
-    if paquete is None:
-        return
-    st.session_state['directo_visible'] = paquete
-    inventario = paquete['inventario']
-    imagen, resumen = st.columns([3, 1])
-    with imagen:
-        st.image(vista_video(paquete['resultado'], paquete['objetos']), channels='BGR', width='stretch')
-        if mascara:
-            st.image(paquete['resultado']['mascara'], caption='Máscara de objetos', width='stretch')
-    with resumen:
-        st.metric('Objetos', inventario['total'])
-        st.metric('Sin identificar', inventario['desconocidos'])
-        st.caption(f"Procesamiento: {paquete['fps']:.1f} FPS" +
-                   (f" · Fotograma {paquete['indice']}" if controlador.video else ''))
-        st.dataframe([{'Herramienta': k, 'Cantidad': v} for k, v in inventario['presentes'].items()],
-                     hide_index=True, width='stretch')
-        if inventario['esperadas'] is not None:
-            st.caption('Inventario provisional' if inventario['provisional'] else
-                       'Inventario completo' if inventario['completo'] else 'Hay diferencias')
-            if inventario['faltantes']:
-                st.write('Faltan', inventario['faltantes'])
-            if inventario['repetidos']:
-                st.write('Sobran', inventario['repetidos'])
-    for aviso in paquete['resultado']['avisos']:
-        st.warning(aviso)
-    with st.expander('Por qué se reconoce cada herramienta'):
-        st.dataframe([{'Pista': o['id_pista'], 'Herramienta': o['clase_predicha'],
-                       'Regla': o['regla'], 'Explicación': o['explicacion']} for o in paquete['objetos']],
-                     hide_index=True, width='stretch')
-        st.caption('Predicciones por reglas clásicas. Guardar fotos o vídeo no confirma etiquetas.')
+
+
+def mostrar_inventario(inventario):
+    st.subheader('Inventario')
+    presentes = inventario['presentes']
+    esperadas = inventario['esperadas']
+    ocultables = inventario.get('posiblemente_ocultas', {})
+    filas = []
+    if esperadas is None:
+        filas = [{'Herramienta': nombre, 'Vistas': cantidad} for nombre, cantidad in presentes.items()]
+    else:
+        if inventario['provisional']:
+            st.warning('Inventario provisional')
+        elif inventario['completo']:
+            st.success('Inventario completo')
+        else:
+            st.warning('Hay diferencias en el inventario')
+        for nombre in sorted(esperadas.keys() | presentes.keys()):
+            vistas = presentes.get(nombre, 0)
+            previstas = esperadas.get(nombre, 0)
+            faltan = inventario['faltantes'].get(nombre, 0)
+            sobran = inventario['repetidos'].get(nombre, 0)
+            if faltan:
+                inciertas = min(faltan, ocultables.get(nombre, 0))
+                faltan_confirmadas = faltan - inciertas
+                if inciertas:
+                    estado = f'Posiblemente ocultas: {inciertas}'
+                    if faltan_confirmadas:
+                        estado += f' · faltan {faltan_confirmadas}'
+                else:
+                    estado = f'Ausente · faltan {faltan}' if vistas == 0 else f'Faltan {faltan}'
+            elif sobran:
+                estado = f'Sobran {sobran}' if previstas == 0 else f'Repetida · sobran {sobran}'
+            else:
+                estado = 'Correcto'
+            filas.append({'Herramienta': nombre, 'Vistas': vistas, 'Esperadas': previstas, 'Estado': estado})
+    if filas:
+        st.table(filas, hide_index=True, border='horizontal')
+    if ocultables:
+        st.caption('Posible oclusión · ' + ', '.join(f'{nombre} ({cantidad})' for nombre, cantidad in ocultables.items()))
+    st.caption(f"Detectadas: {inventario['total']} · Sin identificar: {inventario['desconocidos']}")

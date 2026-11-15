@@ -137,7 +137,11 @@ class DirectoTests(unittest.TestCase):
 
     def test_render_no_modifica_imagen_y_contiene_panel_de_inventario(self):
         original = self.resultado["imagen"].copy()
-        motor = ReconocedorDirecto(cargar_inventario(BASE / "ejemplos" / "inventario.json"))
+        esperadas = dict.fromkeys((
+            "Destornillador", "Calibre", "Desbarbador manual", "Martillo",
+            "Juego de llaves Allen", "Nivel",
+        ), 1)
+        motor = ReconocedorDirecto(esperadas)
         objetos, inventario = motor.procesar(self.resultado, self.valores)
         vista = dibujar_directo(self.resultado, objetos, inventario, en_vivo=False)
         np.testing.assert_array_equal(original, self.resultado["imagen"])

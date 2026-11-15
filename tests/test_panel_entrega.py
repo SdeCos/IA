@@ -38,7 +38,7 @@ class PanelEntrega(unittest.TestCase):
 
     def test_perfil_referencia_evaluacion_y_recarga(self):
         self.ejecutar()
-        self.elemento('radio','Modo de trabajo').set_value('Entrega')
+        self.at.session_state['modo_trabajo'] = 'Entrega'
         self.ejecutar()
         clases = ['Martillo','Nivel','Calibre','Metro','Destornillador']
         self.elemento('multiselect','Clases de la entrega (5–8)').set_value(clases)
@@ -46,7 +46,7 @@ class PanelEntrega(unittest.TestCase):
         self.ejecutar()
         self.assertEqual(cargar_perfil(self.base)['clases'], clases)
         self.assertFalse(self.at.error)
-        self.elemento('radio','Modo de trabajo').set_value('Fotografías')
+        self.at.session_state['modo_trabajo'] = 'Fotografías'
         self.at.session_state['pestana_principal'] = 'Reconocimiento automático'
         self.ejecutar()
         self.assertTrue(self.elemento('checkbox','Definir cantidades esperadas').value)
@@ -77,6 +77,6 @@ class PanelEntrega(unittest.TestCase):
     def test_entrega_disponible_sin_fotos(self):
         (self.base/"datos" / 'capturas'/'escena_prueba.png').unlink()
         self.ejecutar()
-        self.elemento('radio','Modo de trabajo').set_value('Entrega')
+        self.at.session_state['modo_trabajo'] = 'Entrega'
         self.ejecutar()
         self.assertTrue(any(h.value=='Preparar la entrega' for h in self.at.header))

@@ -12,11 +12,15 @@ from streamlit.testing.v1 import AppTest
 
 from herramientas.datos import configuracion
 from herramientas.datos.configuracion import VALORES_PREDETERMINADOS, guardar_configuracion
+from herramientas.datos.entrega import guardar_perfil
 from herramientas.datos.nombres import leer_nombre
 from herramientas.media import directo_web
 from herramientas.media.directo_web import DirectoWeb
 from herramientas.media.video import inspeccionar_video
 from herramientas.web.panel_directo import guardar_instante
+from herramientas.web.panel_video import vista_video
+from herramientas.vision.reconocimiento import ReconocedorDirecto
+from herramientas.vision.vision import procesar_imagen
 
 RAIZ = Path(__file__).resolve().parents[1]
 
@@ -64,6 +68,53 @@ class DirectoWebTest(unittest.TestCase):
         self.addCleanup(c.detener)
         c.iniciar()
         return c
+
+    def test_oclusion_del_borde_es_provisional_y_caduca(self):
+        motor = ReconocedorDirecto({'Nivel': 1})
+        visible = procesar_imagen(self.imagen, self.valores)
+        tapada = self.imagen.copy()
+        cv2.rectangle(tapada, (88, 0), (100, 55), (160, 190, 230), -1)
+        ocluida = procesar_imagen(tapada, self.valores)
+        vacia = np.full_like(self.imagen, (100, 150, 0))
+        retirada = procesar_imagen(vacia, self.valores)
+        self.assertEqual(ocluida['objetos'], [])
+
+        self.assertTrue(motor.procesar(visible, self.valores, tiempo=0)[1]['completo'])
+        _, inventario = motor.procesar(ocluida, self.valores, tiempo=.3)
+        self.assertEqual(inventario['posiblemente_ocultas'], {'Nivel': 1})
+        self.assertEqual(inventario['presentes'], {})
+        self.assertTrue(inventario['provisional'])
+        imagen = vista_video(ocluida, [], presentacion=True, oclusiones=motor.oclusiones)
+        self.assertTrue(np.any(np.all(imagen == (0, 190, 255), axis=2)))
+        self.assertTrue(motor.procesar(visible, self.valores, tiempo=.5)[1]['completo'])
+        _, inventario = motor.procesar(ocluida, self.valores, tiempo=.8)
+        self.assertEqual(inventario['posiblemente_ocultas'], {'Nivel': 1})
+        _, inventario = motor.procesar(ocluida, self.valores, tiempo=2.1)
+        self.assertNotIn('posiblemente_ocultas', inventario)
+        self.assertEqual(inventario['faltantes'], {'Nivel': 1})
+        self.assertFalse(motor.oclusiones)
+
+        motor.procesar(visible, self.valores, tiempo=3)
+        _, inventario = motor.procesar(retirada, self.valores, tiempo=3.1)
+        self.assertNotIn('posiblemente_ocultas', inventario)
+        self.assertEqual(inventario['faltantes'], {'Nivel': 1})
+
+    def test_salida_parcial_del_encuadre_conserva_el_contorno_previo(self):
+        motor = ReconocedorDirecto({'Nivel': 1})
+        foto = np.full_like(self.imagen, (100, 150, 0))
+        cv2.rectangle(foto, (80, 4), (110, 174), (250, 250, 250), -1)
+        visible = procesar_imagen(foto, self.valores)
+        objetos, inventario = motor.procesar(visible, self.valores, tiempo=0)
+        self.assertTrue(inventario['completo'])
+        foto[:] = (100, 150, 0)
+        cv2.rectangle(foto, (80, -2), (110, 168), (250, 250, 250), -1)
+        recortada = procesar_imagen(foto, self.valores)
+        self.assertFalse(recortada['objetos'])
+
+        detecciones, inventario = motor.procesar(recortada, self.valores, tiempo=.2)
+        self.assertEqual(detecciones, [])
+        self.assertEqual(inventario['posiblemente_ocultas'], {'Nivel': 1})
+        np.testing.assert_array_equal(motor.oclusiones[0]['contorno'], objetos[0]['contorno'])
 
     def test_video_pausa_ajustes_reinicio_fin_y_cierre(self):
         c = self.crear(video=self.video)
@@ -144,7 +195,7 @@ class DirectoWebTest(unittest.TestCase):
             at.run()
             self.assertFalse(at.exception)
         ejecutar()
-        elemento('radio', 'Modo de trabajo').set_value('En directo')
+        at.session_state['modo_trabajo'] = 'En directo'
         ejecutar()
         abrir.assert_not_called()
         elemento('radio', 'Fuente del directo').set_value('Vídeo de prueba')
@@ -161,7 +212,50 @@ class DirectoWebTest(unittest.TestCase):
         elemento('button','Guardar foto').click()
         ejecutar()
         self.assertTrue(Path(at.session_state['directo_foto']).exists())
-        elemento('radio','Modo de trabajo').set_value('Entrega')
+        at.session_state['modo_trabajo'] = 'Entrega'
         ejecutar()
         self.assertFalse(c.activo)
         abrir.assert_not_called()
+
+    def test_presentacion_usa_perfil_y_muestra_ausencia_y_repeticion(self):
+        clases = ['Nivel', 'Martillo', 'Calibre', 'Alicate', 'Metro']
+        guardar_perfil(self.base, clases, dict.fromkeys(clases, 1))
+        self.pila.enter_context(patch.object(configuracion, 'BASE', self.base))
+        self.pila.enter_context(patch.object(configuracion, 'RUTA_CONFIGURACION',
+                                            self.base/'config/configuracion.json'))
+        imagen = self.imagen.copy()
+        cv2.rectangle(imagen, (160, 40), (190, 210), (250, 250, 250), -1)
+        falsa = CamaraFalsa(imagen)
+        abrir = self.pila.enter_context(patch.object(directo_web, 'abrir_camara', return_value=falsa))
+        at = AppTest.from_file(str(RAIZ/'src/herramientas/web/app_web.py'), default_timeout=30)
+        at.session_state['modo_trabajo'] = 'En directo'
+        at.run()
+        next(w for w in at.number_input if w.label == 'Índice de cámara').set_value(0).run()
+        next(b for b in at.button if b.label == 'Guardar ajustes del directo').click().run()
+        self.assertEqual((self.base/'config/camara.json').read_text().strip(), '0')
+        self.assertFalse(at.exception)
+        del at.session_state['indice_camara_directo']
+        at.session_state['modo_trabajo'] = 'Presentación'
+        at.run()
+        self.assertFalse(at.exception)
+        abrir.assert_not_called()
+        at.selectbox(key='presentacion_fuente').set_value('iPhone por USB').run()
+        self.assertTrue(any('cable de datos' in aviso.value for aviso in at.caption))
+        next(b for b in at.button if b.label == 'Iniciar').click().run()
+        self.assertFalse(at.exception)
+        controlador = at.session_state['directo_controlador']
+        self.addCleanup(controlador.detener)
+        esperar(lambda: controlador.estado()['ultimo'] is not None)
+        at.run()
+        self.assertFalse(at.exception)
+        abrir.assert_called_once_with(0)
+        self.assertFalse(at.sidebar.number_input)
+        self.assertFalse(at.toggle)
+        self.assertEqual([b.label for b in at.button], ['Detener'])
+        filas = at.table[0].value.set_index('Herramienta')
+        self.assertEqual(filas.loc['Nivel', 'Estado'], 'Repetida · sobran 1')
+        self.assertEqual(filas.loc['Martillo', 'Estado'], 'Ausente · faltan 1')
+        at.session_state['modo_trabajo'] = 'Fotografías'
+        at.run()
+        self.assertFalse(at.exception)
+        self.assertTrue(falsa.liberada)

@@ -109,7 +109,8 @@ def procesar_imagen(frame, valores):
     verde_alto = np.array([valores["h_max"], valores["s_max"], valores["v_max"]])
     verde = cv2.inRange(hsv, verde_bajo, verde_alto)
     region, tapete = localizar_tapete(verde, valores["margen_tapete"], valores["limitar_tapete"])
-    mascara_bruta = cv2.bitwise_and(cv2.bitwise_not(verde), region)
+    mascara_no_verde = cv2.bitwise_not(verde)
+    mascara_bruta = cv2.bitwise_and(mascara_no_verde, region)
     avisos = []
     if tapete["activo"] and not tapete["detectado"]:
         avisos.append(tapete["motivo"] + " No se analizan objetos hasta localizarlo.")
@@ -181,6 +182,7 @@ def procesar_imagen(frame, valores):
         "imagen": imagen,
         "encuadre": encuadre,
         "mascara_bruta": mascara_bruta,
+        "mascara_no_verde": mascara_no_verde,
         "mascara": mascara,
         "mascara_tapete": region,
         "tapete": tapete,
@@ -234,7 +236,7 @@ def _posicion_id(cx, cy, ancho, alto, ocupados, ancho_imagen, alto_imagen):
     raise ValueError("No hay espacio en la imagen para dibujar todos los IDs sin solaparlos.")
 
 
-def dibujar_resultado(resultado, etiquetas=None, telemetria=True):
+def dibujar_resultado(resultado, etiquetas=None, telemetria=True, *, mostrar_geometria=True):
     """Devuelve una imagen BGR anotada nueva; no modifica el resultado original.
 
     Las etiquetas son un mapping opcional ``id -> nombre`` introducido por una
@@ -248,15 +250,17 @@ def dibujar_resultado(resultado, etiquetas=None, telemetria=True):
     etiquetas = etiquetas or {}
     fuente = cv2.FONT_HERSHEY_SIMPLEX
     ocupados = []
-    if resultado.get("tapete", {}).get("activo") and resultado["tapete"]["detectado"]:
+    if mostrar_geometria and resultado.get("tapete", {}).get("activo") and resultado["tapete"]["detectado"]:
         region = resultado["mascara_tapete"]
         imagen[region == 0] = (imagen[region == 0] * .35).astype(np.uint8)
         bordes, _ = cv2.findContours(region, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         cv2.drawContours(imagen, bordes, -1, (255, 220, 0), 1)
     for objeto in objetos:
-        cv2.drawContours(imagen, [objeto["contorno"]], -1, (0, 255, 0), 2)
-        cv2.drawContours(imagen, [objeto["hull"]], -1, (255, 150, 0), 1)
-        cv2.drawContours(imagen, [objeto["caja"]], 0, (0, 0, 255), 2)
+        previo = objeto.get("contorno_previo", False)
+        cv2.drawContours(imagen, [objeto["contorno"]], -1, (0, 190, 255) if previo else (0, 255, 0), 2)
+        if mostrar_geometria and not previo:
+            cv2.drawContours(imagen, [objeto["hull"]], -1, (255, 150, 0), 1)
+            cv2.drawContours(imagen, [objeto["caja"]], 0, (0, 0, 255), 2)
 
     for objeto in objetos:
         texto = str(objeto["id"])
@@ -266,7 +270,8 @@ def dibujar_resultado(resultado, etiquetas=None, telemetria=True):
         x1, y1, x2, y2 = _posicion_id(cx, cy, ancho, alto, ocupados, imagen.shape[1], imagen.shape[0])
         cv2.line(imagen, (cx, cy), ((x1 + x2) // 2, (y1 + y2) // 2), (255, 255, 255), 1, cv2.LINE_AA)
         cv2.rectangle(imagen, (x1, y1), (x2, y2), (22, 22, 22), cv2.FILLED)
-        cv2.rectangle(imagen, (x1, y1), (x2, y2), (255, 255, 255), 1)
+        color = (0, 190, 255) if objeto.get("contorno_previo", False) else (255, 255, 255)
+        cv2.rectangle(imagen, (x1, y1), (x2, y2), color, 1)
         cv2.putText(imagen, texto, (x1 + 7, y1 + alto_texto + 5), fuente, 0.65, (255, 255, 255), 2, cv2.LINE_AA)
 
     if not telemetria and not etiquetas:

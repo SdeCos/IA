@@ -32,7 +32,7 @@ from herramientas.web import biblioteca
 if getattr(biblioteca, 'VERSION_BIBLIOTECA', None) != 2:
     importlib.reload(biblioteca)
 from herramientas.web.biblioteca import seleccionar_foto, preparar_siguiente, mostrar_papelera
-from herramientas.web.panel_directo import mostrar_directo, detener_directo
+from herramientas.web.panel_directo import mostrar_directo, mostrar_presentacion, detener_directo
 
 
 def listar_fotos(base=BASE):
@@ -379,14 +379,12 @@ def mostrar_calibracion(resultado, sesion, origen, imagen, token):
 def main():
     st.set_page_config(page_title="Mesa de herramientas · Reto 07", page_icon="🔧", layout="wide")
     st.markdown("""<style>
-      .block-container {padding-top:3.5rem; padding-bottom:2rem; max-width:1600px;}
+      [data-testid="stMainBlockContainer"] {padding-top:3.5rem; padding-bottom:2rem; max-width:none;}
       h1 {letter-spacing:-.035em; font-size:2rem;}
       [data-testid="stMetric"] {border:1px solid #52666e30; border-radius:12px; padding:12px 18px;}
       [data-testid="stMetricValue"] {font-size:1.8rem;}
-      @media (min-width:900px) { [data-testid="stSidebar"] {min-width:325px;} }
     </style>""", unsafe_allow_html=True)
-    st.caption("RETO 07  /  VISIÓN ARTIFICIAL CLÁSICA")
-    st.title("Mesa de herramientas")
+    cabecera = st.empty()
     foto_extraida = st.session_state.pop("foto_desde_video", None)
     if foto_extraida:
         st.session_state["modo_trabajo"] = "Fotografías"
@@ -395,14 +393,29 @@ def main():
         st.session_state["filtro_estado_fotos"] = "Todas"
         st.session_state["buscar_foto"] = ""
         st.session_state["pestana_principal"] = "Calibración y etiquetas"
-    modo = st.sidebar.radio("Modo de trabajo", ["Fotografías", "En directo", "Vídeos", "Entrega"], key="modo_trabajo")
-    if modo != "En directo":
+    modos = ["Fotografías", "En directo", "Vídeos", "Entrega", "Presentación"]
+    pestanas = st.tabs(modos, key="modo_trabajo", on_change="rerun")
+    modo, pestana = next((m, p) for m, p in zip(modos, pestanas) if p.open)
+    if modo != "Presentación":
+        cabecera.title("Mesa de herramientas")
+    if modo != st.session_state.get("ultimo_modo"):
         detener_directo()
-    if modo == "En directo":
+        st.session_state.pop("directo_controlador", None)
+        st.session_state.pop("directo_visible", None)
+        st.session_state["ultimo_modo"] = modo
+    with pestana:
+        mostrar_modo(modo)
+
+
+def mostrar_modo(modo):
+    if modo in ("En directo", "Presentación"):
         for sesion_video in st.session_state.get("sesiones_video", {}).values():
             sesion_video["reproduciendo"] = False
         try:
-            mostrar_directo(BASE, ajustes)
+            if modo == "Presentación":
+                mostrar_presentacion(BASE)
+            else:
+                mostrar_directo(BASE, ajustes)
         except (OSError, ValueError, RuntimeError, cv2.error) as error:
             detener_directo()
             st.error(f"No se puede iniciar el directo: {error}")

@@ -1,6 +1,7 @@
 """Reconocimiento de una secuencia de cámara, sin depender de Streamlit."""
 
 import csv
+from collections import Counter
 import json
 from pathlib import Path
 import unicodedata
@@ -27,20 +28,86 @@ def cargar_inventario(ruta):
 
 
 class ReconocedorDirecto:
+    OCLUSION_SEGUNDOS = 1.5
+
     def __init__(self, esperadas=None):
         self.esperadas = inventario_objetos([], esperadas)["esperadas"]
         self.seguidor = SeguidorObjetos()
         self.indice = 0
+        self._contexto = None
+        self._vistos = {}
+        self.oclusiones = []
 
     def reiniciar(self):
         """Tras perder imagen no se atribuye continuidad a la reconexión."""
         self.seguidor.reiniciar()
+        self._vistos.clear()
+        self.oclusiones = []
 
-    def procesar(self, resultado, valores):
+    def procesar(self, resultado, valores, *, tiempo=None):
         contexto = VERSION_CLASIFICADOR + json.dumps(valores, sort_keys=True)
+        if contexto != self._contexto:
+            self._vistos.clear()
+            self._contexto = contexto
         objetos = clasificar_objetos(self.seguidor.actualizar(resultado["objetos"], self.indice, contexto))
         self.indice += 1
-        return objetos, inventario_objetos(objetos, self.esperadas)
+        inventario = inventario_objetos(objetos, self.esperadas)
+        self.oclusiones = []
+        if tiempo is not None:
+            self.oclusiones = self._posibles_oclusiones(resultado, objetos, tiempo)
+            if self.oclusiones:
+                ocultables = Counter(o["clase_predicha"] for o in self.oclusiones)
+                inventario.update(posiblemente_ocultas=dict(ocultables), provisional=True, completo=None)
+        return objetos, inventario
+
+    def _posibles_oclusiones(self, resultado, objetos, tiempo):
+        tapete = resultado["tapete"]
+        if tapete["activo"] and not tapete["detectado"]:
+            self._vistos.clear()
+            return []
+        # La delimitación actual puede excluir la mano junto con la herramienta.
+        # Se consulta el color sin recortar, únicamente dentro de la última silueta.
+        mascara = resultado["mascara_no_verde"]
+        identificados = {o["id_pista"]: o for o in objetos if o["estado_clasificacion"] == "identificada"}
+        recientes = {}
+        ocultables = []
+        mascara_borde = None
+        for pista, (anterior, ultima_vez, zona) in self._vistos.items():
+            if pista in identificados or not 0 <= tiempo - ultima_vez < self.OCLUSION_SEGUNDOS:
+                continue
+            nombre = anterior["clase_predicha"]
+            contorno = anterior["contorno"]
+            # Una retirada que deja el tapete despejado se refleja de inmediato.
+            x, y, ancho, alto = cv2.boundingRect(contorno)
+            region = mascara[y:y+alto, x:x+ancho]
+            if region.shape != zona.shape:
+                continue
+            minimo = .35 * np.count_nonzero(zona)
+            if np.count_nonzero(region[zona]) < minimo:
+                # Una salida por el borde puede desplazar la silueta unos
+                # píxeles antes de que el detector la descarte.
+                if not resultado["descartados_borde"]:
+                    continue
+                if mascara_borde is None:
+                    mascara_borde = cv2.dilate(mascara, np.ones((11, 11), np.uint8))
+                if np.count_nonzero(mascara_borde[y:y+alto, x:x+ancho][zona]) < minimo:
+                    continue
+            # Una detección que recuperó el nombre con otro ID puede ocupar la
+            # misma posición después de una fusión o de caducar en el seguidor.
+            if any(o["clase_predicha"] == nombre and SeguidorObjetos._contiene(
+                    dict(contorno=contorno), (float(o["centroide_x_px"]), float(o["centroide_y_px"])))
+                   for o in identificados.values()):
+                continue
+            recientes[pista] = (anterior, ultima_vez, zona)
+            ocultables.append(anterior)
+        for pista, objeto in identificados.items():
+            contorno = objeto["contorno"]
+            x, y, ancho, alto = cv2.boundingRect(contorno)
+            zona = np.zeros((alto, ancho), dtype=np.uint8)
+            cv2.drawContours(zona, [contorno], -1, 1, cv2.FILLED, offset=(-x, -y))
+            recientes[pista] = (objeto, tiempo, zona.astype(bool))
+        self._vistos = recientes
+        return ocultables
 
 
 def _ascii(texto):

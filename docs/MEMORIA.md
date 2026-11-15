@@ -197,7 +197,7 @@ Si más adelante se utiliza el número de huecos o el área blanca efectiva como
 
 `clasificacion.py` implementa `reglas-manuales-v4`. No entrena un árbol, no ajusta automáticamente umbrales y no consulta etiquetas, nombres de archivo, IDs, posición ni orientación absoluta al predecir. Se emplean ocho cocientes de forma: relación de aspecto, solidez, circularidad, extensión, contraste de extremos, fracción ancha, asimetría longitudinal y ancho central. Las quince reglas (varias vistas para algunas de las nueve clases disponibles) y sus intervalos completos, junto con la justificación geométrica y la procedencia de desarrollo, se documentan en [REGLAS.md](REGLAS.md).
 
-Cada regla es una conjunción: se deben satisfacer sus ocho condiciones. Se comprueba la compatibilidad de todas las reglas; no hay una prioridad que oculte coincidencias múltiples. El esquema de decisión implementado es (los subárboles con los límites de cada nodo están en [ARBOL_DECISION.md](ARBOL_DECISION.md) y en el modo Entrega):
+Cada regla es una conjunción: se deben satisfacer sus ocho condiciones. Se comprueba la compatibilidad de todas las reglas; no hay una prioridad que oculte coincidencias múltiples. El esquema de decisión implementado es (los subárboles con los límites de cada nodo están en [diagrama generado](arboles/principal.dot) y en el modo Entrega):
 
 ```mermaid
 flowchart TD
@@ -325,7 +325,7 @@ la declaración debe corresponder a lo que hizo realmente el experimentador.
 El informe contiene precisión y exhaustividad de detección, clasificación sobre
 TP, identificación completa sobre objetos reales, matriz con «No detectado» y
 «Sin objeto», inventario exacto y acierto de avisos de ausencias/sobrantes. Las
-fórmulas y el procedimiento están en [PRUEBAS_CASA.md](PRUEBAS_CASA.md). No se han
+fórmulas y el procedimiento se resumen en el plan de validación siguiente. No se han
 creado referencias finales ficticias a partir de las predicciones.
 
 ## 9. Plan de validación
@@ -370,20 +370,18 @@ Antes de evaluar se definirá un criterio de correspondencia entre cada detecci�
 - Pipeline, explicación de segmentación y definiciones de características.
 - Tabla de mediciones por clase, con procedencia de las imágenes.
 - Reglas finales con cada umbral respaldado por mediciones, conservando su versión y alcance.
-- Selección de entre cinco y ocho tipos para la entrega o acuerdo explícito con el docente sobre las nueve clases del prototipo.
+- Perfil final de siete clases, guardado en `config/entrega.json`.
 - Conjunto de pruebas separado y resultados cuantitativos con ejemplos de errores.
 - Demostración del inventario y de herramientas ausentes o repetidas.
 - Vídeo y preparación de la demostración presencial con escenas propuestas por el profesor.
 
 La base de requisitos de este borrador es el enunciado «Reto 07 - Examen parcial» aportado por el usuario. Los apartados marcados como pendientes deben completarse con mediciones y resultados reales antes de la entrega.
 
-## 11. Documentación auxiliar para finalizar
-
-- [Enunciado actualizado](ENUNCIADO.md) y [checklist de entrega](CHECKLIST_ENTREGA.md).
-- [Parámetros y evidencias pendientes](PARAMETROS_Y_EVIDENCIAS.md): incluye etapas de segmentación, no solo clasificación.
-- [Guion de pruebas físicas](PRUEBAS_CASA.md).
-- [Guion de defensa y vídeo de 7–10 minutos](DEFENSA_Y_VIDEO.md): cuenta universitaria de YouTube y enlace en portada.
-- [Respaldo verificable de datos](RESPALDOS.md).
+La demo narrada dura 7–10 minutos. Debe mostrar el montaje, el proceso, el
+inventario con cambios de escena y los resultados de una prueba nueva. Se sube
+a YouTube con la cuenta universitaria y se enlaza en la portada de la memoria.
+El [enunciado](ENUNCIADO.md) y la [checklist](CHECKLIST_ENTREGA.md) recogen el
+alcance y lo que queda para la entrega.
 
 El enunciado exige código bien comentado y uso crítico de LLM para texto, tablas
 y figuras. Las mediciones pendientes deben completarse con evidencia real. El

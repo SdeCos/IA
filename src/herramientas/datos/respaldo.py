@@ -10,7 +10,7 @@ import json
 from pathlib import Path
 import zipfile
 
-CARPETAS = ('src', 'config', 'datos', 'docs', 'ejemplos', 'tests')
+CARPETAS = ('src', 'config', 'datos', 'docs', 'tests')
 EXTENSIONES = ('.py', '.json', '.md', '.txt', '.sh', '.command')
 
 

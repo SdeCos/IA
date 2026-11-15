@@ -97,19 +97,26 @@ def procesar_posicion(sesion, ruta, info):
     return sesion["resultado"], sesion["objetos"]
 
 
-def vista_video(resultado, objetos):
+def vista_video(resultado, objetos, *, presentacion=False, oclusiones=()):
     # Solo la copia destinada a dibujar cambia su texto; los IDs locales se
     # conservan en el procesamiento, las tablas y los CSV.
     para_dibujar = []
+    pistas_ocultas = {o['id_pista'] for o in oclusiones}
     for objeto in objetos:
-        texto = f"P{objeto['id_pista']} {objeto['clase_predicha']}"
+        if objeto['id_pista'] in pistas_ocultas:
+            continue
+        texto = objeto['clase_predicha'] if presentacion else f"P{objeto['id_pista']} {objeto['clase_predicha']}"
         texto = unicodedata.normalize("NFKD", texto).encode("ascii", "ignore").decode()
         # OpenCV no dibuja acentos; las tablas conservan los nombres completos.
         # Recortar la leyenda evita salir de la imagen incluso con nombres largos.
         while cv2.getTextSize(texto, cv2.FONT_HERSHEY_SIMPLEX, .65, 2)[0][0] > resultado["imagen"].shape[1] - 28:
             texto = texto[:-4] + "..." if texto.endswith("...") else texto[:-1] + "..."
         para_dibujar.append({**objeto, "id": texto})
-    return dibujar_resultado({**resultado, "objetos": para_dibujar}, telemetria=False)
+    for objeto in oclusiones:
+        texto = unicodedata.normalize("NFKD", objeto['clase_predicha']).encode("ascii", "ignore").decode()
+        para_dibujar.append({**objeto, "id": f"{texto} (posible oclusion)", "contorno_previo": True})
+    return dibujar_resultado({**resultado, "objetos": para_dibujar}, telemetria=False,
+                             mostrar_geometria=not presentacion)
 
 
 def elegir_video(base):

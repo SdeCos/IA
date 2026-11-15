@@ -79,14 +79,10 @@ def mostrar_preparacion(base):
             for aviso in datos['avisos']:
                 st.caption(aviso)
     st.info('Las pruebas físicas y la evaluación con escenas nuevas siguen pendientes. La checklist distingue esas tareas de las funciones ya implementadas.')
-    with st.expander('Checklist y guiones para descargar'):
-        for nombre, titulo in [('CHECKLIST_ENTREGA.md', 'Checklist de entrega'),
-                               ('PRUEBAS_CASA.md', 'Guion de pruebas en casa'),
-                               ('DEFENSA_Y_VIDEO.md', 'Guion de defensa y vídeo'),
-                               ('RESPALDOS.md', 'Copias de seguridad')]:
-            ruta = Path(base)/'docs'/nombre
-            if ruta.exists():
-                st.download_button(titulo, ruta.read_text(encoding='utf-8'), nombre, 'text/markdown')
+    checklist = Path(base)/'docs/CHECKLIST_ENTREGA.md'
+    if checklist.exists():
+        st.download_button('Checklist de entrega', checklist.read_text(encoding='utf-8'),
+                           checklist.name, 'text/markdown')
     mostrar_informe_escenas(base)
 
 

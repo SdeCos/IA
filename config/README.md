@@ -14,5 +14,5 @@ Para aplicar un fichero explícitamente:
 ./iniciar_directo.command --camara 1 --config config/configuracion.json
 ```
 
-Los comandos se ejecutan desde la raíz. El ejemplo de inventario se encuentra
-en [`ejemplos/inventario.json`](../ejemplos/inventario.json).
+Los comandos se ejecutan desde la raíz. El inventario de las siete herramientas
+se guarda en [`entrega.json`](entrega.json).

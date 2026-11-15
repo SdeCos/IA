@@ -62,9 +62,10 @@ def abrir_camara(indice):
             time.sleep(1)
     cap.release()
     raise RuntimeError(
-        f"No se pudo abrir la cámara {indice}. Prueba otro índice con --camara.\n"
-        "Comprueba que el iPhone esté disponible en Photo Booth o FaceTime y revisa "
-        "el permiso de Cámara de la aplicación desde la que ejecutas Python."
+        f"No se pudo abrir la cámara {indice}.\n"
+        "En macOS, revisa Ajustes del Sistema → Privacidad y seguridad → Cámara y "
+        "autoriza la aplicación desde la que ejecutas Python. Confirma que el iPhone "
+        "esté disponible en Photo Booth y prueba otro índice si es necesario."
     )
 
 

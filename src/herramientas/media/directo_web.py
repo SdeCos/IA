@@ -162,13 +162,15 @@ class DirectoWeb:
                                 self._grabaciones.append(str(ruta))
                             grabacion = None
                 resultado = procesar_imagen(original, valores)
-                objetos, inventario = self.motor.procesar(resultado, valores)
+                tiempo_imagen = indice / reproductor.info['fps'] if reproductor else inicio
+                objetos, inventario = self.motor.procesar(resultado, valores, tiempo=tiempo_imagen)
                 ahora = time.monotonic()
                 fps = 1 / max(.001, ahora - previo) if previo is not None else 0
                 previo, revision = ahora, valores
                 with self._lock:
                     self._ultimo = dict(original=original, resultado=resultado, objetos=objetos,
-                                        inventario=inventario, valores=valores, indice=indice, fps=fps)
+                                        inventario=inventario, valores=valores, indice=indice, fps=fps,
+                                        oclusiones=self.motor.oclusiones)
                     self._grabando = grabacion is not None
                     if reproductor and (reproductor.fin or indice == reproductor.info['fotogramas'] - 1):
                         self._pausado = True

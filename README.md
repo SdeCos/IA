@@ -9,11 +9,10 @@ Sistema de visión artificial clásica: cámara → segmentación del tapete ver
 contornos → características geométricas → reglas manuales → nombres e inventario.
 No usa redes neuronales ni entrena clasificadores.
 
-Empieza por la [checklist de entrega](docs/CHECKLIST_ENTREGA.md). También tienes
-el [guion de pruebas en casa](docs/PRUEBAS_CASA.md), el [árbol detallado](docs/ARBOL_DECISION.md),
-la [preparación de la defensa y vídeo](docs/DEFENSA_Y_VIDEO.md) y el
-[enunciado actualizado](docs/ENUNCIADO.md). La programación permite trabajar
-sin cámara; la validación física y las escenas nuevas siguen pendientes.
+Consulta la [checklist de entrega](docs/CHECKLIST_ENTREGA.md) y el
+[enunciado del reto](docs/ENUNCIADO.md). Las decisiones técnicas y las
+mediciones de desarrollo están en el [borrador de memoria](docs/MEMORIA.md)
+y en las [reglas](docs/REGLAS.md).
 
 Si tenías la web abierta antes de esta actualización, guarda el trabajo pendiente,
 detén su terminal con Ctrl+C y vuelve a ejecutar `./iniciar_web.command` para
@@ -34,6 +33,27 @@ Todo el flujo principal está disponible en la misma web:
 | **Fotografías** | Calibración, nombres de captura, etiquetas y comparación con las reglas. |
 | **Vídeos** | Importar clips, buscar fotogramas y exportar intervalos de análisis. |
 | **Entrega** | Perfil del inventario, árboles, referencias y evaluación. |
+| **Presentación** | Cámara o vídeo guardado, reconocimiento e inventario con avisos de ausencias y repeticiones. |
+
+Para la demo, abre **Presentación** en la barra superior, elige **Cámara en directo**
+o un vídeo guardado y pulsa **Iniciar**. Presentación usa el índice seleccionado en
+**En directo → Fuente y captura** (1 inicialmente). **Guardar ajustes del directo**
+conserva esa selección para próximos arranques. La tabla compara cantidades vistas
+y esperadas del perfil de **Entrega**.
+Puedes parar la captura o, para un vídeo, pausarlo y reiniciarlo.
+
+Para usar el **iPhone por USB**, conéctalo al Mac con un cable de datos y
+acepta **Confiar** en el iPhone y **Permitir** en el Mac si se solicitan.
+Selecciona **iPhone por USB** en la web y pulsa **Iniciar**. macOS gestiona el
+transporte mediante Cámara de Continuidad. Si cambia el índice de la cámara al
+conectar el cable, cámbialo en **En directo → Fuente y captura**.
+
+Si una herramienta reconocida queda tapada o parcialmente fuera del encuadre y
+su última posición sigue ocupada, la vista muestra su último contorno en ámbar
+y el inventario indica una posible oclusión durante un máximo de 1,5 segundos
+desde la última detección. La columna **Vistas** conserva el
+recuento del fotograma actual. Si el tapete queda despejado en esa posición,
+la ausencia se muestra de inmediato.
 
 Para probar **sin cámara**: En directo → Fuente y captura → Vídeo de prueba →
 elige el clip → Iniciar. Puedes pausar, continuar y reiniciar. Al finalizar el
@@ -125,14 +145,12 @@ modo Directo. Un `--inventario` explícito tiene prioridad sobre ese perfil.
 las reglas: las clases fuera de la selección siguen visibles y pueden aparecer
 como sobrantes; no se ocultan detecciones ni se borran etiquetas.
 
-Edita `ejemplos/inventario.json` para indicar las cantidades que realmente
-esperas. Incluye el inventario completo: las clases no incluidas se consideran
-esperadas cero. El archivo incluido es solo un ejemplo con las seis herramientas
-originales, y se utiliza únicamente si lo indicas:
-
-```bash
-./iniciar_directo.command --camara 1 --inventario ejemplos/inventario.json
-```
+Para comprobar una ausencia, retira una herramienta esperada y comprueba el
+aviso de faltante. Para comprobar una repetición física, coloca dos ejemplares
+que el sistema reconozca como la misma clase y espera una unidad en el perfil.
+Con un solo ejemplar puedes probar el aviso de sobrante configurando su cantidad
+esperada a cero de forma temporal. Esa prueba comprueba el exceso de cantidad;
+la lógica de dos detecciones de la misma clase se comprueba en las pruebas automáticas.
 
 El panel compara lo reconocido con lo esperado e indica cantidades que faltan
 o sobran. Si hay desconocidos, la comparación es provisional. Una herramienta
@@ -186,9 +204,6 @@ como **Predicción**. Confirmar sin guardar no termina el trabajo; cambios de
 píxeles, ajustes o revisiones pueden devolver la foto a pendientes. Una foto sin
 detecciones también queda pendiente: cero detecciones no demuestra una escena vacía.
 
-Consulta [cómo comprobar el método clásico](docs/COMPROBAR_METODO_CLASICO.md)
-para recorrer las medidas, las reglas y las pruebas de independencia de etiquetas.
-
 ### Usar el vídeo guardado como si fuera la cámara
 
 En clase puedes ejecutar la misma vista de reconocimiento en directo con el
@@ -218,8 +233,8 @@ tarda más, se reproduce más despacio sin saltar fotogramas. La vista indica
 
 El vídeo original no se sobrescribe. R en este modo reinicia, no crea otra grabación.
 Se cargan primero los ajustes guardados para ese clip; `--config` y `--zoom`
-permiten sobrescribirlos explícitamente. También admite
-`--inventario ejemplos/inventario.json`.
+permiten sobrescribirlos explícitamente. Para comparar cantidades se carga el
+perfil guardado en `config/entrega.json`.
 Los fotogramas extraídos conservan el vídeo y el índice originales: siguen siendo
 datos del mismo grupo de desarrollo, no nuevas escenas independientes.
 
@@ -253,8 +268,7 @@ El calibrador original continúa disponible, sin nombres automáticos:
 ```
 
 Abre `http://127.0.0.1:8501`. Mantén esa terminal abierta; Ctrl+C detiene la web.
-La web trabaja con archivos guardados; la cámara en directo se abre con el
-comando anterior, en sus ventanas locales.
+La web acepta archivos guardados y la cámara local del Mac.
 
 - **Fotografías:** ajustar segmentación, confirmar etiquetas y guardar sesiones.
 - **Reconocimiento automático:** predicciones, inventario esperado y evaluación
@@ -276,10 +290,8 @@ que solo tiene filas para lo que el detector encontró.
 separando desarrollo y prueba reservada; permite exportar JSON y dos CSV.
 Los parámetros guardados y las firmas protegen las correspondencias ante cambios.
 Si la segmentación cambia, abre la escena y revisa de nuevo. Las referencias
-incluyen sus píxeles en `datos/evaluaciones/`. Consulta el [protocolo y las fórmulas](docs/PRUEBAS_CASA.md).
-
-La [guía detallada](docs/GUIA_USO.md) explica guardados, etiquetas, procedencia,
-exportaciones y funcionamiento de todos los controles.
+incluyen sus píxeles en `datos/evaluaciones/`. El protocolo y las métricas
+están en el [plan de validación de la memoria](docs/MEMORIA.md#9-plan-de-validación).
 
 ## Organización y scripts
 
@@ -306,8 +318,7 @@ IA/
 │   ├── resultados/            # Sesiones, medidas y predicciones
 │   ├── etiquetas/             # Etiquetas auxiliares anteriores
 │   └── evaluaciones/          # Referencias completas, creadas al guardar
-├── docs/                      # Enunciado, memoria, checklist, guías y árboles
-├── ejemplos/                  # Inventario de ejemplo
+├── docs/                      # Enunciado, checklist, memoria, reglas y diagramas
 ├── tests/                     # Pruebas automatizadas
 ├── respaldos/                 # Copias locales verificables, excluidas de Git
 └── .venv-web/                 # Entorno Python local, excluido de Git
@@ -315,8 +326,8 @@ IA/
 
 Los datos locales y los entornos están excluidos de Git. Las carpetas opcionales
 se crean cuando se utilizan. Consulta el [mapa del código](src/README.md),
-los [ajustes globales](config/README.md) y la [organización de datos](datos/README.md). La [documentación](docs/README.md) y las
-[pruebas](tests/README.md) tienen sus propios índices.
+los [ajustes globales](config/README.md), la [organización de datos](datos/README.md)
+y las [pruebas](tests/README.md).
 
 | Archivo o carpeta | Para qué sirve |
 |---|---|
@@ -328,9 +339,8 @@ los [ajustes globales](config/README.md) y la [organización de datos](datos/REA
 | `config/configuracion.json` | Ajustes globales; las fotos y los vídeos pueden tener sus propios ajustes. |
 | `config/herramientas.json` | Catálogo de etiquetas. Añadir un nombre no crea una regla nueva. |
 | `datos/capturas/`, `datos/videos/`, `datos/resultados/`, `datos/etiquetas/` | Datos y trabajo guardado; conservan la identidad de las imágenes y la procedencia de las sesiones. |
-| `ejemplos/` | Inventario de ejemplo editable. |
 | `tests/` | Pruebas automatizadas, con archivos temporales y cámaras simuladas. |
-| `docs/` | Guía completa, memoria y reglas justificadas. |
+| `docs/` | Checklist, enunciado, borrador de memoria, reglas y diagramas. |
 | `src/herramientas/datos/entrega.py` / `config/entrega.json` | Validación y perfil opcional de clases y cantidades, creado al guardar en Entrega. |
 | `src/herramientas/vision/arbol.py` / `docs/arboles/` | Generación de diagramas desde las reglas actuales. |
 | `src/herramientas/datos/evaluacion_escenas.py` | Métricas completas, referencias y separación por adquisición. |
@@ -379,7 +389,7 @@ un entorno virtual de otro ordenador: vuelve a crearlo con el instalador.
 ### Archivos locales y Git
 
 Git conserva el código, las pruebas, la documentación, `config/configuracion.json`,
-`config/herramientas.json` y los ejemplos. Los entornos de Python, cachés, temporales
+`config/herramientas.json` y `config/entrega.json`. Los entornos de Python, cachés, temporales
 y las carpetas `datos/capturas/`, `datos/videos/`, `datos/resultados/`, `datos/etiquetas/`, `datos/evaluaciones/`
 y `respaldos/` se excluyen.
 Estas carpetas incluyen las anotaciones manuales y los ajustes asociados a cada
@@ -387,7 +397,9 @@ sesión: haz una copia aparte para conservarlos o trasladarlos a otro ordenador.
 Clonar el repositorio no recupera esas grabaciones ni las sesiones etiquetadas.
 
 Desde esta carpeta, `./ejecutar.sh respaldo` crea y verifica una copia
-ZIP en `respaldos/`. Cópiala a otro dispositivo. [Detalles y recuperación](docs/RESPALDOS.md).
+ZIP en `respaldos/`. Cópiala a otro dispositivo. Puedes verificarla con
+`./ejecutar.sh respaldo --verificar /ruta/a/copia.zip`. Para recuperarla,
+extrae el ZIP en una carpeta nueva y crea allí el entorno con `bash configurar_web.sh`.
 
 ### Pendiente de validar
 

@@ -150,7 +150,7 @@ class LaboratorioVideo(unittest.TestCase):
         self.assertTrue(foto.with_suffix(".json").is_file())
         self.assertTrue(foto.with_suffix(".origen.json").is_file())
         self.pulsar("Abrir foto guardada para etiquetar")
-        self.assertEqual(self.elemento("radio", "Modo de trabajo").value, "Fotografías")
+        self.assertEqual(self.at.session_state["modo_trabajo"], "Fotografías")
         self.assertEqual(self.elemento("selectbox", "Foto guardada").value, foto)
         self.assertEqual(self.elemento("selectbox", "Herramienta real").value, "Sin etiquetar")
         sesion_foto = next(iter(self.at.session_state["sesiones_trabajo"].values()))
