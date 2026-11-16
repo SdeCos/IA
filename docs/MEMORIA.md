@@ -197,7 +197,7 @@ Si más adelante se utiliza el número de huecos o el área blanca efectiva como
 
 `clasificacion.py` implementa `reglas-manuales-v4`. No entrena un árbol, no ajusta automáticamente umbrales y no consulta etiquetas, nombres de archivo, IDs, posición ni orientación absoluta al predecir. Se emplean ocho cocientes de forma: relación de aspecto, solidez, circularidad, extensión, contraste de extremos, fracción ancha, asimetría longitudinal y ancho central. Las quince reglas (varias vistas para algunas de las nueve clases disponibles) y sus intervalos completos, junto con la justificación geométrica y la procedencia de desarrollo, se documentan en [REGLAS.md](REGLAS.md).
 
-Cada regla es una conjunción: se deben satisfacer sus ocho condiciones. Se comprueba la compatibilidad de todas las reglas; no hay una prioridad que oculte coincidencias múltiples. El esquema de decisión implementado es (los subárboles con los límites de cada nodo están en [diagrama generado](arboles/principal.dot) y en el modo Entrega):
+Cada regla comprueba sus ocho condiciones. Se evalúa la compatibilidad de todas las reglas. La web muestra el diagrama y los límites de cada regla en **Entrega → Ver árbol y condiciones**.
 
 ```mermaid
 flowchart TD

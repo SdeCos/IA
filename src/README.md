@@ -61,7 +61,8 @@ se escriben en `datos/` y la configuración global en `config/`, nunca en `src/`
 
 Usa imports completos (`from herramientas.vision...`) para evitar colisiones
 entre módulos. Conserva los `__init__.py` de cada paquete. Al añadir una regla,
-actualiza sus pruebas y regenera los diagramas con `./ejecutar.sh arbol`.
+actualiza sus pruebas. La web muestra los diagramas de las reglas vigentes.
+Para guardar copias en `output/arboles/`, ejecuta `./ejecutar.sh arbol`.
 Después ejecuta `./ejecutar.sh pruebas`. La reorganización de carpetas no cambia
 las versiones del algoritmo ni invalida las etiquetas si los píxeles y ajustes
 siguen siendo los mismos.

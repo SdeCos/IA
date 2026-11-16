@@ -342,7 +342,7 @@ y las [pruebas](tests/README.md).
 | `tests/` | Pruebas automatizadas, con archivos temporales y cámaras simuladas. |
 | `docs/` | Checklist, enunciado, borrador de memoria, reglas y diagramas. |
 | `src/herramientas/datos/entrega.py` / `config/entrega.json` | Validación y perfil opcional de clases y cantidades, creado al guardar en Entrega. |
-| `src/herramientas/vision/arbol.py` / `docs/arboles/` | Generación de diagramas desde las reglas actuales. |
+| `src/herramientas/vision/arbol.py` | Genera los diagramas de las reglas para la web. `./ejecutar.sh arbol` los exporta a `output/arboles/`. |
 | `src/herramientas/datos/evaluacion_escenas.py` | Métricas completas, referencias y separación por adquisición. |
 | `src/herramientas/web/panel_entrega.py` | Perfil, árbol, revisión de referencias y evaluación en la web. |
 | `datos/evaluaciones/` | Referencias completas con imagen, parámetros y correspondencias humanas; datos locales. |

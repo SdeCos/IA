@@ -83,7 +83,6 @@ def exportar_arboles(destino):
 
 
 if __name__ == '__main__':
-    from pathlib import Path
     from herramientas.datos.configuracion import BASE
-    exportar_arboles(BASE/'docs'/'arboles')
-    print('Diagramas regenerados en docs/arboles/. Se visualizan en la web → Entrega.')
+    exportar_arboles(BASE/'output'/'arboles')
+    print('Diagramas exportados a output/arboles/. También se visualizan en Entrega.')

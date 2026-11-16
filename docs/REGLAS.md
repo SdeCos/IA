@@ -182,8 +182,8 @@ recortes de una captura agrupados bajo la misma procedencia. No es una tasa
 esperada en escenas nuevas ni mide herramientas omitidas por la segmentación.
 Los seis objetos pendientes no se han confirmado automáticamente.
 
-La lista completa de procedencias consultadas está en `grupos_desarrollo` de
-[reglas.json](arboles/reglas.json). Las medidas portables de regresión están en
+La lista completa de procedencias consultadas está en `GRUPOS_DESARROLLO` de
+[`clasificacion.py`](../src/herramientas/vision/clasificacion.py). Las medidas portables de regresión están en
 `tests/fixtures/referencias_reglas_v3.json`; el clasificador nunca lee ese archivo.
 No se han optimizado umbrales automáticamente ni entrenado un clasificador.
 Se necesitan nuevas adquisiciones reservadas. Cintas curvas, otras longitudes,
