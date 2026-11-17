@@ -23,6 +23,7 @@ class ReproductorArchivo:
         self.fin = False
 
     def leer(self):
+        """Avanza un fotograma o conserva la imagen actual durante la pausa."""
         if self.pausado and self.imagen is not None:
             return self.imagen
         if self.indice + 1 >= self.info["fotogramas"]:

@@ -2,13 +2,17 @@
 
 **Reto 07 · Examen parcial de Inteligencia Artificial**
 
-**Borrador para revisión · 16 de noviembre de 2026**
+**Borrador para revisión · 17 de noviembre de 2026**
 
-**Autor, grupo y centro** · Pendientes de completar
+**Autor** · Saúl de Cos Sánchez
+
+**Titulación** · Ingeniería Informática
+
+**Centro** · Universidad Europea del Atlántico
 
 **Vídeo de demostración** · Pendiente de publicar en YouTube con la cuenta universitaria e insertar aquí su enlace.
 
-**Datos de prueba** · Pendiente de incluir el enlace al Google Drive de la cuenta de alumno.
+**Datos de prueba** · [Abrir datos de prueba en Google Drive](https://drive.google.com/drive/folders/1w7xBxmV9MZBmku5CirfXgyoyz0kC26rc?usp=sharing)
 
 Una cámara cenital observa herramientas sobre un tapete verde. El programa separa las siluetas, identifica cada pieza con reglas geométricas y compara las cantidades observadas con un inventario esperado. La aplicación permite usar la cámara en directo y reproducir grabaciones para repetir una prueba.
 
@@ -24,12 +28,12 @@ El reto pide entre cinco y ocho tipos distinguibles por silueta, con orientació
 
 | Elemento | Configuración y motivo |
 |---|---|
-| Cámara | Un iPhone en posición cenital fija, aproximadamente perpendicular al tapete. Así se reduce la perspectiva y se puede mover o girar una pieza conservando una vista comparable. Completar modelo, lente y altura desde el tapete. |
-| Soporte | Soporte impreso en 3D adaptado para pasar el cable. Añadir fotografía lateral y cenital del montaje final. |
-| Conexión y equipo | Mac con Cámara de Continuidad. La aplicación ofrece captura por USB y conexión inalámbrica a través de macOS. Completar modelo del Mac y modo usado en la evaluación final. |
-| Fondo | Tapete verde mate para separar fondo y herramientas por HSV. Verificar cobertura aproximada de 0,50 × 0,50 m y encuadre con fondo uniforme. Anotar las medidas reales. |
-| Iluminación (opcional) | Indicar si se usó luz ambiental o una fuente auxiliar, su posición y las condiciones de la prueba. Revisar sombras y reflejos, especialmente sobre el calibre. |
-| Adquisición | Un vídeo de desarrollo está registrado a 1920 × 1080 y 15 fps nominales. El software procesa a 800 px de ancho. Medir la resolución efectiva, la escala en px/mm y el detalle más fino visible en el montaje final. |
+| Cámara | iPhone 15 Pro Max en posición cenital fija, aproximadamente perpendicular al tapete. En la prueba, la distancia desde la cámara al tapete fue de unos 70 cm. |
+| Soporte | Acople de trípode impreso en 3D y adaptado para dejar paso al cable. Pendiente la fotografía lateral del montaje físico. |
+| Conexión y equipo | Mac con chip M3 Pro. Para la prueba se usó Cámara de Continuidad por USB, con un cable USB-C de 2 m. |
+| Fondo | Tapete verde mate de 48,5 × 40,5 cm. Su color delimita la zona útil mediante umbrales HSV. |
+| Iluminación | Luz ambiental de la habitación durante la prueba. |
+| Adquisición | Zoom digital de aproximadamente 1,25× en la prueba. El software procesa la imagen a 800 px de ancho. Un vídeo de desarrollo se registró a 1920 × 1080 y 15 fps nominales. |
 
 ![Figura 1. Vista isométrica del acople para el trípode. El soporte mantiene el móvil en posición cenital y deja paso para el cable.](figuras_memoria/soporte_movil.png)
 
@@ -37,9 +41,21 @@ El reto pide entre cinco y ocho tipos distinguibles por silueta, con orientació
 
 <!-- pagina -->
 
+## Comprobación del encuadre y del detalle
+
+En esta prueba, la vista **Presentación** reconoció las siete herramientas, con una unidad de cada clase y cero objetos sin identificar. El contorno conserva detalles estrechos como el vástago del destornillador. La figura documenta una escena en directo. Las métricas de escenas reservadas se recogen en la sección 9.
+
+![Figura 2. Captura cenital de la aplicación con siete herramientas reconocidas y aviso de inventario completo.](figuras_memoria/montaje_en_directo.png)
+
+En la captura, un tramo del borde superior del tapete queda fuera del encuadre. Para la presentación se puede reducir el zoom o recentrar el soporte hasta ver el tapete entero. Una vez fijado el encuadre, falta guardar una captura con una referencia de longitud en el plano del tapete para medir la escala en px/mm.
+
+El tapete medido queda por debajo de los 50 × 50 cm de referencia del primer enunciado, sobre todo en su lado corto. Las medidas de la tabla corresponden al montaje usado en la captura.
+
+<!-- pagina -->
+
 ## 3. Diagrama del pipeline completo
 
-![Figura 2. Secuencia desde la entrada hasta el inventario.](figuras_memoria/proceso.png)
+![Figura 3. Secuencia desde la entrada hasta el inventario.](figuras_memoria/proceso.png)
 
 ## 4. Método de segmentación
 
@@ -47,7 +63,7 @@ La entrada de OpenCV se recibe en BGR. Tras el recorte central opcional y el red
 
 El cierre conecta pequeños cortes de la máscara. La apertura está desactivada en los ajustes guardados. Después se vuelve a aplicar la región útil, se extraen los contornos exteriores y se descartan las áreas pequeñas y los componentes que tocan el límite de la zona útil. Si falta una región válida del tapete, la interfaz avisa de que el inventario está sin comprobar.
 
-![Figura 3. Contorno y máscara del calibre en una captura de desarrollo. Se muestra el mismo recorte en ambas vistas.](figuras_memoria/segmentacion.jpg)
+![Figura 4. Contorno y máscara del calibre en una captura de desarrollo. Se muestra el mismo recorte en ambas vistas.](figuras_memoria/segmentacion.jpg)
 
 <!-- pagina -->
 
@@ -71,7 +87,7 @@ Los ocho cocientes siguientes alimentan las reglas. El detector también calcula
 
 La anchura se mide entre los extremos visibles del contorno en 40 cortes perpendiculares al eje largo. La caja rotada y la normalización permiten comparar giros y tamaños. Los huecos interiores se quedan fuera de los rasgos de contorno exterior.
 
-**Ejemplo del subárbol R6.** Las dos columnas de límites proceden del subárbol del calibre. Los valores observados pertenecen al calibre de la figura 3. Cumple las ocho condiciones interiores de R6 y ninguna otra clase es compatible.
+**Ejemplo del subárbol R6.** Las dos columnas de límites proceden del subárbol del calibre. Los valores observados pertenecen al calibre de la figura 4. Cumple las ocho condiciones interiores de R6 y ninguna otra clase es compatible.
 
 | Rasgo | Observado | Compatible (incluye extremos) | Interior (excluye extremos) |
 |---|---|---|---|
@@ -88,7 +104,7 @@ La anchura se mide entre los extremos visibles del contorno en 40 cortes perpend
 
 ## 6. Árbol de decisión utilizado
 
-![Figura 4. Flujo de decisión del clasificador, con los perfiles de las siete herramientas de la entrega.](figuras_memoria/decision.png)
+![Figura 5. Flujo de decisión del clasificador, con los perfiles de las siete herramientas de la entrega.](figuras_memoria/decision.png)
 
 Las reglas están escritas en [`_REGLAS` de `src/herramientas/vision/clasificacion.py`](../src/herramientas/vision/clasificacion.py#L97). Los perfiles resumen las variantes de cada clase. Por ejemplo, la cabeza ancha y el mango del martillo se traducen en una relación de aspecto de 2,5 a 4,5, un contraste de extremos de 0,25 a 0,55 y un ancho central de 0,28 a 0,45, además de los otros cinco intervalos de R7.
 
@@ -168,17 +184,18 @@ Dos fallos observados guiaron cambios concretos. En los tres encuadres amplios d
 
 En las referencias de desarrollo de estas siete clases hubo **102/102 aciertos de clasificación, 0 nombres erróneos y 0 abstenciones**. La métrica se calcula sobre las siluetas etiquetadas. Las omisiones y las detecciones espurias se miden evaluando todas las herramientas reales de cada escena.
 
-A fecha de este borrador hay **0 escenas independientes registradas**. Para completar el resultado, conservar escenas nuevas con ajustes fijos y variar número, posición, orientación y combinaciones. Incluir tapete vacío, una retirada, una reposición y, si hay dos ejemplares reconocibles de una misma clase, una repetición física. Anotar la realidad de cada escena, incluidas las piezas que el sistema omita.
+El 17 de noviembre se evaluaron **cuatro escenas reservadas**, con 0, 3, 5 y 7 herramientas. Para cada foto se registraron las herramientas presentes y se revisó qué contorno correspondía a cada una. El sistema identificó correctamente las **15 herramientas presentes**, con **0 falsas detecciones, 0 omisiones, 0 nombres erróneos y 0 abstenciones**. En el tapete vacío obtuvo cero detecciones.
 
 | Medida de evaluación final | Cálculo o criterio | Resultado |
 |---|---|---|
-| Precisión de detección | Detectados correctos / total detectado | Pendiente |
-| Exhaustividad de detección | Detectados correctos / total real | Pendiente |
-| Acierto de clasificación | Clases correctas / detecciones asociadas | Pendiente |
-| Acierto extremo a extremo | Clases correctas / objetos reales | Pendiente |
-| Inventario y avisos | Escenas con inventario exacto y avisos correctos / escenas evaluables, por separado | Pendiente |
+| Precisión de detección | Detectados correctos / total detectado | 100 % (15/15) |
+| Exhaustividad de detección | Detectados correctos / total real | 100 % (15/15) |
+| Acierto de clasificación | Clases correctas / detecciones asociadas | 100 % (15/15) |
+| Acierto extremo a extremo | Clases correctas / objetos reales | 100 % (15/15) |
+| Inventario exacto | Escenas con los recuentos correctos / escenas evaluadas | 100 % (4/4) |
+| Avisos correctos | Escenas con todos los avisos correctos / escenas evaluables | 100 % (4/4) |
 
-Registrar TP (detección real asociada), FP (detección sin correspondencia), FN (herramienta omitida), nombre incorrecto y resultado desconocido. Añadir uno o dos ejemplos de error y su causa observada. Reservar la adquisición completa, agrupando los fotogramas de cada clip para evitar que material usado al ajustar también se presente como prueba independiente.
+La muestra incluye las siete clases de entrega. Los resultados corresponden a estas cuatro escenas fijas e incluyen casos de inventario completo y de herramientas ausentes. Queda por evaluar en escenas reservadas el comportamiento con ejemplares repetidos o con oclusiones.
 
 <!-- pagina -->
 
@@ -189,7 +206,7 @@ El entorno documentado usa Python 3.13, OpenCV 5.0 y NumPy. OpenCV se ocupa de l
 1. Se delimitó el tapete y se calibró su rango de color con imágenes propias.
 2. Se etiquetaron ejemplos y se midieron rasgos para redactar reglas manuales.
 3. Se añadieron variantes al observar fallos con herramientas abiertas, extendidas o de canto.
-4. Se integraron la captura, el inventario y la vista de presentación. La evaluación reservada se realiza con el montaje y los ajustes definitivos.
+4. Se integraron la captura, el inventario y la vista de presentación. Se evaluaron cuatro escenas reservadas con el montaje de la prueba.
 
 ## 10. Código fuente y otras tareas
 
@@ -209,4 +226,4 @@ Desde la raíz, `./iniciar_web.command` abre la aplicación. **Presentación** m
 
 En este entorno pasaron las 165 pruebas automáticas del repositorio. El recuento corresponde a pruebas de software.
 
-**Uso crítico del LLM.** Se usó para redactar el borrador, organizar las tablas y preparar las figuras. En la revisión se contrastaron las preguntas del diagrama con las reglas del código, se repitieron las comparaciones de segmentación en las capturas originales y se comprobó qué resultados procedían de ajustes de desarrollo. Para cerrar la memoria se deben verificar las medidas y fotografías del montaje, incorporar la evaluación reservada y completar los enlaces de portada.
+**Uso crítico del LLM.** Se usó para redactar el borrador, organizar las tablas y preparar las figuras. En la revisión se contrastaron las preguntas del diagrama con las reglas del código, se repitieron las comparaciones de segmentación en las capturas originales y se verificaron los resultados de las cuatro escenas reservadas con su referencia manual.

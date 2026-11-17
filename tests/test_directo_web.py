@@ -251,10 +251,27 @@ class DirectoWebTest(unittest.TestCase):
         abrir.assert_called_once_with(0)
         self.assertFalse(at.sidebar.number_input)
         self.assertFalse(at.toggle)
-        self.assertEqual([b.label for b in at.button], ['Detener'])
+        self.assertEqual([b.label for b in at.button], ['Detener', 'Volver a 1×'])
         filas = at.table[0].value.set_index('Herramienta')
         self.assertEqual(filas.loc['Nivel', 'Estado'], 'Repetida · sobran 1')
         self.assertEqual(filas.loc['Martillo', 'Estado'], 'Ausente · faltan 1')
+        avisos = [aviso.value for aviso in at.warning]
+        self.assertTrue(any('**Faltan**' in aviso and 'Martillo ×1' in aviso for aviso in avisos))
+        self.assertIn('**Sobran** · Nivel ×1', avisos)
+
+        zoom = at.slider(key='presentacion_zoom')
+        self.assertEqual(zoom.value, 100)
+        zoom.set_value(125).run()
+        self.assertFalse(at.exception)
+        esperar(lambda: controlador.estado()['ultimo']['valores']['zoom'] == 125)
+        self.assertEqual(controlador.estado()['ultimo']['resultado']['encuadre'].shape[:2], (192, 256))
+        next(b for b in at.button if b.label == 'Volver a 1×').click().run()
+        self.assertFalse(at.exception)
+        esperar(lambda: controlador.estado()['ultimo']['valores']['zoom'] == 100)
+        self.assertEqual(controlador.estado()['ultimo']['resultado']['encuadre'].shape[:2], self.imagen.shape[:2])
+        self.assertEqual(at.slider(key='presentacion_zoom').value, 100)
+        abrir.assert_called_once_with(0)
+
         at.session_state['modo_trabajo'] = 'Fotografías'
         at.run()
         self.assertFalse(at.exception)

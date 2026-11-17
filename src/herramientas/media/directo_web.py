@@ -31,6 +31,8 @@ atexit.register(_cerrar_al_salir)
 
 
 class DirectoWeb:
+    """Mantiene una fuente de vídeo abierta durante una sesión web activa."""
+
     def __init__(self, base, valores, esperadas=None, *, camara=1, video=None, caducidad=15):
         self.base = Path(base)
         self.valores = validar_configuracion(valores)
@@ -96,10 +98,11 @@ class DirectoWeb:
             self._grabar = activo
 
     def estado(self):
+        """Entrega a la interfaz el último paquete publicado y los ajustes solicitados."""
         with self._lock:
             return dict(activo=self.activo, pausado=self._pausado, grabando=self._grabando,
                         grabar_solicitado=self._grabar, ultimo=self._ultimo, mensaje=self._mensaje,
-                        error=self._error, grabaciones=list(self._grabaciones))
+                        error=self._error, grabaciones=list(self._grabaciones), valores=self.valores.copy())
 
     def _ejecutar(self):
         cap = reproductor = grabacion = None
@@ -124,10 +127,14 @@ class DirectoWeb:
                     valores = self.valores.copy()
                     pausa, reiniciar, grabar = self._pausado, self._reiniciar, self._grabar
                     self._reiniciar = False
+                # La lectura y el procesamiento ocurren fuera del bloqueo.
+                # El paquete se publica completo al terminar el fotograma.
                 if reproductor:
                     if reiniciar:
                         reproductor.reiniciar()
                         self.motor.reiniciar()
+                    # En pausa se vuelve a procesar el mismo fotograma cuando
+                    # cambian los ajustes, por ejemplo al ajustar el zoom.
                     if pausa and revision == valores and self._ultimo is not None and not reiniciar:
                         self._salir.wait(.05)
                         continue

@@ -8,7 +8,7 @@ import streamlit as st
 
 from herramientas.cli.calibrador import guardar_captura
 from herramientas.cli.detector import exportar_resultado
-from herramientas.datos.configuracion import cargar_configuracion, guardar_configuracion
+from herramientas.datos.configuracion import LIMITES, cargar_configuracion, guardar_configuracion
 from herramientas.datos.entrega import cargar_perfil, escribir_json
 from herramientas.datos.nombres import guardar_nombre, validar_nombre
 from herramientas.media.directo_web import DirectoWeb
@@ -79,6 +79,7 @@ def mostrar_presentacion(base):
         if fuente == CAMARA_USB:
             st.caption(AYUDA_USB)
         if st.button('Iniciar', type='primary', key='presentacion_iniciar'):
+            st.session_state.pop('presentacion_zoom', None)
             iniciar_flujo(base, ajustes_de_fuente(base, ruta), perfil['esperadas'],
                           camara=indice_de_camara(base) if ruta is None else 1, video=ruta)
     if controlador is not None:
@@ -194,7 +195,7 @@ def _mostrar_flujo(base, controlador, nombre, mascara, estaba_activo, presentaci
         return
     # Los botones operan sobre el último fotograma enviado al navegador.
     visible = st.session_state.get('directo_visible')
-    acciones = st.columns(3 if presentacion else 4)
+    acciones = st.columns(4)
     if estado['activo'] and acciones[0].button('Detener', key='directo_detener'):
         controlador.detener()
         st.rerun()
@@ -214,6 +215,17 @@ def _mostrar_flujo(base, controlador, nombre, mascara, estaba_activo, presentaci
     if not presentacion:
         foto = acciones[3].button('Guardar foto', disabled=visible is None, key='directo_guardar')
         _guardar_desde_flujo(base, controlador, nombre, estado, visible, foto)
+    else:
+        with acciones[3].popover('Zoom', width='stretch'):
+            minimo, maximo = LIMITES['zoom']
+            valores = estado['valores']
+            st.session_state.setdefault('presentacion_zoom', valores['zoom'])
+            if st.button('Volver a 1×', key='presentacion_zoom_restablecer'):
+                st.session_state['presentacion_zoom'] = minimo
+            zoom = st.slider('Zoom digital', minimo, maximo, step=1, format='%d %%',
+                             key='presentacion_zoom')
+            if zoom != valores['zoom']:
+                controlador.ajustar({**valores, 'zoom': zoom})
     if estado['error']:
         st.error(estado['error'])
     if presentacion:
@@ -288,12 +300,11 @@ def mostrar_inventario(inventario):
     if esperadas is None:
         filas = [{'Herramienta': nombre, 'Vistas': cantidad} for nombre, cantidad in presentes.items()]
     else:
+        faltantes, sobrantes = [], []
         if inventario['provisional']:
             st.warning('Inventario provisional')
         elif inventario['completo']:
             st.success('Inventario completo')
-        else:
-            st.warning('Hay diferencias en el inventario')
         for nombre in sorted(esperadas.keys() | presentes.keys()):
             vistas = presentes.get(nombre, 0)
             previstas = esperadas.get(nombre, 0)
@@ -302,6 +313,8 @@ def mostrar_inventario(inventario):
             if faltan:
                 inciertas = min(faltan, ocultables.get(nombre, 0))
                 faltan_confirmadas = faltan - inciertas
+                if faltan_confirmadas:
+                    faltantes.append(f'{nombre} ×{faltan_confirmadas}')
                 if inciertas:
                     estado = f'Posiblemente ocultas: {inciertas}'
                     if faltan_confirmadas:
@@ -310,9 +323,15 @@ def mostrar_inventario(inventario):
                     estado = f'Ausente · faltan {faltan}' if vistas == 0 else f'Faltan {faltan}'
             elif sobran:
                 estado = f'Sobran {sobran}' if previstas == 0 else f'Repetida · sobran {sobran}'
+                sobrantes.append(f'{nombre} ×{sobran}')
             else:
                 estado = 'Correcto'
             filas.append({'Herramienta': nombre, 'Vistas': vistas, 'Esperadas': previstas, 'Estado': estado})
+        if faltantes:
+            titulo = 'Faltas por confirmar' if inventario['provisional'] else 'Faltan'
+            st.warning(f"**{titulo}** · {', '.join(faltantes)}")
+        if sobrantes:
+            st.warning(f"**Sobran** · {', '.join(sobrantes)}")
     if filas:
         st.table(filas, hide_index=True, border='horizontal')
     if ocultables:

@@ -99,6 +99,8 @@ class SeguidorObjetos:
 
         disponibles = {k: p for k, p in pistas.items() if k not in invalidas}
         usados, resultado = set(), []
+        # La asociación solo se conserva si detección y pista se eligen
+        # mutuamente como su mejor coincidencia y el resultado es inequívoco.
         for j, objeto in enumerate(objetos):
             opciones = por_objeto.get(j, [])
             candidato = opciones[0][1] if opciones else None

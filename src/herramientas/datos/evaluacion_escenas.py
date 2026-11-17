@@ -62,6 +62,8 @@ def evaluar_escena(objetos, referencias, asociaciones, esperadas=None):
         if i not in usados:
             filas.append(dict(id_deteccion=None, id_real=i, nombre_real=nombre,
                               clase_predicha='No detectado', resultado='omision'))
+    # Una detección bien asociada cuenta como TP aunque su nombre sea erróneo.
+    # El acierto de identificación exige además acertar la clase.
     tp, fp, fn = len(usados), len(objetos)-len(usados), len(referencias)-len(usados)
     aciertos = sum(f['resultado'] == 'acierto' for f in filas)
     predicho = inventario_objetos(objetos, esperadas)
@@ -94,6 +96,7 @@ def ruta_referencia(base, imagen):
 
 def guardar_referencia(base, origen, imagen, valores, resultado, referencias, asociaciones,
                        esperadas, reservada):
+    """Conserva los píxeles, los ajustes y las correspondencias revisadas."""
     # Validar TODO antes de escribir. Las predicciones no se convierten en verdad.
     informe = evaluar_escena(clasificar_objetos(resultado['objetos']), referencias, asociaciones, esperadas)
     huella = huella_imagen(imagen)
@@ -137,6 +140,7 @@ def cargar_referencia(base, imagen, valores, resultado):
 
 
 def resumen_escenas(escenas):
+    """Agrega aciertos y errores por objeto y comprueba inventario por escena."""
     tp = sum(e['tp'] for e in escenas)
     fp = sum(e['fp'] for e in escenas)
     fn = sum(e['fn'] for e in escenas)
@@ -157,6 +161,7 @@ def resumen_escenas(escenas):
 
 
 def evaluar_guardadas(base):
+    """Recalcula las referencias válidas y separa los resultados por procedencia."""
     escenas, excluidas = [], []
     desarrollo = set(GRUPOS_DESARROLLO)
     for ruta in sorted((Path(base)/"datos" / 'evaluaciones').glob('*/referencia.json')):

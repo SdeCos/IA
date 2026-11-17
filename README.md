@@ -2,26 +2,40 @@
 
 Este repositorio contiene exclusivamente el **Reto 07 del examen parcial**.
 El código está organizado por función en `src/herramientas/`, los ajustes
-globales en `config/` y los datos locales en `datos/`. Todos los comandos de este
-README se ejecutan desde `/Users/sauldecos/git/IA` (o la carpeta donde lo clones).
+globales en `config/` y los datos locales en `datos/`. Ejecuta los comandos de
+esta guía desde la raíz del repositorio.
 
-Sistema de visión artificial clásica: cámara → segmentación del tapete verde →
-contornos → características geométricas → reglas manuales → nombres e inventario.
-No usa redes neuronales ni entrena clasificadores.
+Consulta la [memoria de entrega en PDF](output/pdf/Memoria_Reto_07_borrador.pdf),
+el [enunciado del reto](docs/ENUNCIADO.md) y la
+[checklist de entrega](docs/CHECKLIST_ENTREGA.md).
 
-Consulta la [checklist de entrega](docs/CHECKLIST_ENTREGA.md) y el
-[enunciado del reto](docs/ENUNCIADO.md). Las decisiones técnicas y las
-mediciones de desarrollo están en el [borrador de memoria](docs/MEMORIA.md)
-y en las [reglas](docs/REGLAS.md).
+## Cómo funciona
 
-Si tenías la web abierta antes de esta actualización, guarda el trabajo pendiente,
-detén su terminal con Ctrl+C y vuelve a ejecutar `./iniciar_web.command` para
-cargar todos los módulos nuevos. No hace falta reinstalar las dependencias.
+El reconocimiento utiliza visión artificial clásica y reglas escritas a mano.
+
+1. **Captura y segmentación.** La cámara, una foto o un vídeo proporcionan la
+   imagen. Se ajusta el encuadre, se redimensiona a 800 px de ancho y se usan
+   umbrales HSV para delimitar el tapete verde. Los píxeles que no son verdes
+   dentro de esa región forman la máscara de las herramientas.
+2. **Medición.** Cada contorno exterior proporciona su centroide, área y caja
+   rotada. La clasificación usa ocho medidas de forma, entre ellas la relación
+   de aspecto, la solidez, la circularidad y los rasgos del perfil de anchura.
+3. **Identificación.** El clasificador comprueba los intervalos de las reglas
+   manuales. Asigna una clase si es la única compatible y alguna de sus reglas
+   cumple los ocho límites interiores. Los casos restantes se muestran como
+   **Desconocido**. Las etiquetas humanas sirven de referencia para evaluar.
+4. **Presentación e inventario.** Se dibuja el nombre cerca del centroide y se
+   comparan las cantidades reconocidas con las previstas en
+   [el perfil de entrega](config/entrega.json). En vídeo se asocian detecciones
+   entre fotogramas por proximidad y área.
+
+El [mapa del código](src/README.md) indica dónde se implementa cada paso.
+La [justificación de las reglas](docs/REGLAS.md) recoge las mediciones que se
+usaron para elegir los intervalos.
 
 ## Empezar desde la web
 
 ```bash
-cd /Users/sauldecos/git/IA
 ./iniciar_web.command
 ```
 
@@ -38,15 +52,18 @@ Todo el flujo principal está disponible en la misma web:
 Para la demo, abre **Presentación** en la barra superior, elige **Cámara en directo**
 o un vídeo guardado y pulsa **Iniciar**. Presentación usa el índice seleccionado en
 **En directo → Fuente y captura** (1 inicialmente). **Guardar ajustes del directo**
-conserva esa selección para próximos arranques. La tabla compara cantidades vistas
-y esperadas del perfil de **Entrega**.
-Puedes parar la captura o, para un vídeo, pausarlo y reiniciarlo.
+conserva esa selección para próximos arranques. Los avisos indican qué herramientas
+faltan o sobran y la tabla muestra las cantidades vistas y esperadas.
+Durante la captura, **Zoom → Volver a 1×** recupera toda la imagen de la cámara.
+Puedes ajustar el recorte desde ese menú sin reiniciar la captura ni guardar el cambio.
 
-Para usar el **iPhone por USB**, conéctalo al Mac con un cable de datos y
-acepta **Confiar** en el iPhone y **Permitir** en el Mac si se solicitan.
-Selecciona **iPhone por USB** en la web y pulsa **Iniciar**. macOS gestiona el
-transporte mediante Cámara de Continuidad. Si cambia el índice de la cámara al
-conectar el cable, cámbialo en **En directo → Fuente y captura**.
+Para pasar de inalámbrico a USB, pulsa **Detener** si hay una captura activa.
+Conecta el iPhone al Mac con un cable de datos y acepta **Confiar** en el iPhone
+y **Permitir** en el Mac si se solicitan. Bloquea el iPhone, colócalo en horizontal
+y pulsa **Iniciar** con **iPhone por USB** seleccionado en la web.
+macOS gestiona el transporte mediante Cámara de Continuidad. Si la cámara no
+aparece, confirma que Photo Booth ve el iPhone y revisa el índice en
+**En directo → Fuente y captura**.
 
 Si una herramienta reconocida queda tapada o parcialmente fuera del encuadre y
 su última posición sigue ocupada, la vista muestra su último contorno en ámbar
@@ -66,7 +83,7 @@ de las fotos se escribe en **Fuente y captura**. **Guardar medidas y revisar
 capturas** contiene la exportación a CSV y el acceso a etiquetar la última foto.
 
 Los ajustes avanzados están plegados en **Ajustes de imagen**. **Mostrar máscara**
-es opcional en directo; las medidas y explicaciones se despliegan cuando hacen
+es opcional en directo y las medidas y explicaciones se despliegan cuando hacen
 falta. Guardar una foto no confirma ninguna etiqueta automáticamente.
 
 La cámara pertenece al Mac que ejecuta Python, no al dispositivo que abre el
@@ -83,10 +100,9 @@ secuencialmente: si el procesamiento tarda más, se reproduce más despacio.
 
 ## Alternativa: directo en ventanas de OpenCV
 
-En este Mac el entorno ya está preparado. Abre una terminal y ejecuta:
+Con el entorno preparado, abre una terminal y ejecuta:
 
 ```bash
-cd /Users/sauldecos/git/IA
 ./iniciar_directo.command --camara 1
 ```
 
@@ -362,8 +378,21 @@ Solo si falta el entorno, desde esta carpeta:
 bash configurar_web.sh
 ```
 
-El instalador utiliza Python 3.13 y `requirements-web.txt` para cámara y web.
-Los lanzadores comparten `.venv-web/`; no se necesita otro entorno.
+El instalador usa **Python 3.13** y crea `.venv-web/`, el entorno que comparten
+la web, los comandos y las pruebas. El montaje se probó en macOS con Apple
+Silicon y Cámara de Continuidad para el iPhone.
+
+| Dependencia | Por qué se usa |
+|---|---|
+| OpenCV (`opencv-python`) | Abre cámaras y archivos de vídeo, convierte a HSV, aplica filtros y morfología, extrae contornos y dibuja las detecciones. |
+| NumPy | Representa las imágenes y máscaras como matrices y permite calcular el perfil geométrico sobre los puntos del contorno. |
+| Streamlit | Sirve la interfaz local de calibración, etiquetado, evaluación y presentación desde Python. |
+| pandas | Organiza las tablas de medidas, resultados y matrices de confusión de la web. |
+| Altair | Representa los perfiles de anchura y los diagramas de dispersión de las características para revisar las reglas. |
+
+Las versiones directas y transitivas se fijan en
+[`requirements-web.txt`](requirements-web.txt) para reproducir el entorno.
+La clasificación ejecuta comparaciones de intervalos implementadas en Python.
 
 Para ejecutar todas las pruebas desde esta carpeta:
 
@@ -401,22 +430,12 @@ ZIP en `respaldos/`. Cópiala a otro dispositivo. Puedes verificarla con
 `./ejecutar.sh respaldo --verificar /ruta/a/copia.zip`. Para recuperarla,
 extrae el ZIP en una carpeta nueva y crea allí el entorno con `bash configurar_web.sh`.
 
-### Pendiente de validar
+### Evaluación
 
-Consulta la [memoria](docs/MEMORIA.md) y las [reglas](docs/REGLAS.md). El perfil
-actual de entrega contiene siete clases, una unidad de cada una: martillo,
-destornillador, alicate, calibre, nivel, metro y desbarbador. Cúter y Allen quedan
-fuera del inventario esperado; sus reglas y referencias históricas se conservan.
-
-Con `reglas-manuales-v4`, la comprobación del 4 de noviembre da 120 aciertos
-sobre 120 referencias confirmadas de 68 imágenes; 102 corresponden a las siete
-clases de entrega. Son resultados de desarrollo, no una evaluación independiente.
-La versión amplía las extensiones del flexómetro y cubre la transición entre
-cinta corta y larga, conservando las variantes de canto y calibre abierto. No cambia la segmentación.
-Tras guardar el trabajo, reinicia la web con `Ctrl+C` y
-`./iniciar_web.command`; comprueba `reglas-manuales-v4` en En directo y activa
-«Usar inventario de Entrega». Etiquetar no modifica las reglas automáticamente.
-
-Falta evaluar escenas nuevas y documentar detección, identificación e inventario,
-incluyendo herramientas omitidas y falsas detecciones. No basta con que el
-vídeo utilizado para definir las reglas funcione bien.
+El [perfil de entrega](config/entrega.json) espera una unidad de cada una de las
+siete clases del proyecto. Con `reglas-manuales-v4`, las cuatro escenas
+reservadas del 17 de noviembre dieron 15 de 15 identificaciones correctas,
+sin omisiones ni falsas detecciones. El inventario y los avisos coincidieron
+con la referencia en las cuatro escenas. La
+[memoria](docs/MEMORIA_ENTREGA.md#9-medida-cuantitativa-de-aciertos-y-errores)
+recoge estas métricas y las de desarrollo.

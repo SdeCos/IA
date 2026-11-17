@@ -39,6 +39,7 @@ def localizar_tapete(verde, margen=2, activo=True):
         info["motivo"] = "No se encuentra el tapete verde. Revisa los ajustes HSV o la fotografía."
         return region, info
     contorno = max(contornos, key=cv2.contourArea)
+    # Rellenar la silueta del tapete incluye las zonas ocupadas por herramientas.
     cv2.drawContours(region, [contorno], -1, 255, cv2.FILLED)
     area = cv2.countNonZero(region)
     proporcion_verde = cv2.countNonZero(cv2.bitwise_and(verde, region)) / max(1, area)
@@ -97,6 +98,8 @@ def procesar_imagen(frame, valores):
     """
     _validar_imagen(frame)
     valores = validar_configuracion(valores)
+    # El recorte define la zona visible. El ancho fijo da una escala de
+    # trabajo común para los filtros, las áreas y el seguimiento en píxeles.
     encuadre = recortar_zoom(frame, valores["zoom"] / 100.0)
     alto, ancho = encuadre.shape[:2]
     alto_procesado = max(1, int(alto * (ANCHO_PROCESADO / ancho)))
@@ -109,6 +112,8 @@ def procesar_imagen(frame, valores):
     verde_alto = np.array([valores["h_max"], valores["s_max"], valores["v_max"]])
     verde = cv2.inRange(hsv, verde_bajo, verde_alto)
     region, tapete = localizar_tapete(verde, valores["margen_tapete"], valores["limitar_tapete"])
+    # El fondo exterior también puede ser no verde. La intersección con la
+    # zona útil conserva solo los candidatos situados dentro del tapete.
     mascara_no_verde = cv2.bitwise_not(verde)
     mascara_bruta = cv2.bitwise_and(mascara_no_verde, region)
     avisos = []
@@ -128,6 +133,8 @@ def procesar_imagen(frame, valores):
         )
     # La morfología puede extender píxeles hacia fuera: volver a limitar al final.
     mascara = cv2.bitwise_and(mascara, region)
+    # Restar una erosión a la región deja un borde interior de un píxel.
+    # Una silueta que lo toca puede estar incompleta y alterar sus medidas.
     borde_region = cv2.subtract(region, cv2.erode(
         region, np.ones((3, 3), np.uint8), borderType=cv2.BORDER_CONSTANT, borderValue=0,
     )) if tapete["activo"] else np.zeros_like(region)

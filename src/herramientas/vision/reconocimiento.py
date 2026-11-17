@@ -28,6 +28,8 @@ def cargar_inventario(ruta):
 
 
 class ReconocedorDirecto:
+    """Coordina el seguimiento, la clasificación y el inventario por fotograma."""
+
     OCLUSION_SEGUNDOS = 1.5
 
     def __init__(self, esperadas=None):
@@ -45,6 +47,12 @@ class ReconocedorDirecto:
         self.oclusiones = []
 
     def procesar(self, resultado, valores, *, tiempo=None):
+        """Devuelve los objetos etiquetados y el recuento de la imagen actual.
+
+        Con una marca de tiempo, conserva también indicios breves de oclusión.
+        Esos indicios se muestran aparte y dejan el inventario provisional.
+        """
+        # Cambiar el encuadre o la máscara invalida las posiciones anteriores.
         contexto = VERSION_CLASIFICADOR + json.dumps(valores, sort_keys=True)
         if contexto != self._contexto:
             self._vistos.clear()
