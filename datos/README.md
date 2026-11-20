@@ -19,4 +19,5 @@ sesión. Al reorganizar este proyecto se actualizaron las rutas de los metadatos
 conservando sus fechas, las etiquetas y las huellas de imagen.
 
 Usa `./ejecutar.sh respaldo` desde la raíz para crear una copia verificada en
-`respaldos/`. Consulta la [guía de respaldos](../docs/RESPALDOS.md).
+`respaldos/`. Para verificar una copia, ejecuta
+`./ejecutar.sh respaldo --verificar /ruta/a/copia.zip`.

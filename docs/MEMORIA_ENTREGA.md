@@ -137,9 +137,11 @@ La tabla de la sección 7 contiene los intervalos de las siete clases de entrega
 
 **Clasificación.** Se eligieron intervalos comparando siluetas y mediciones de desarrollo. El calibre inicial tenía centro normalizado 0,208–0,213 y contraste de extremos 0,630–0,691, frente a 0,307–0,315 y 0,443–0,455 en el martillo. Por eso R6 y R7 combinan ambas medidas. Tras observar que el alicate abierto perdía solidez, extensión y anchura central y reducía su AR, R9 amplió estos cuatro intervalos. Las variantes de canto del martillo y el nivel tienen reglas separadas. En once extensiones nuevas del metro, revisar R12–R15 elevó el acierto de 1/11 a 11/11. El historial de mediciones por clase está en `docs/REGLAS.md`.
 
+En dos capturas del metro recogido, el contraste entre extremos fue 0,282 y 0,318. R1 amplía el límite de 0,25 a 0,36 para admitir esa variación. Las dos capturas se usaron para el ajuste.
+
 | Regla / clase | AR | S | C | E | K | F | A | W |
 |---|---|---|---|---|---|---|---|---|
-| R1 Metro | 1 a 2,2 | 0,9 a 1 | 0,65 a 0,9 | 0,75 a 1 | 0 a 0,25 | 0,85 a 1 | 0 a 0,2 | 0,8 a 1 |
+| R1 Metro | 1 a 2,2 | 0,9 a 1 | 0,65 a 0,9 | 0,75 a 1 | 0 a 0,36 | 0,85 a 1 | 0 a 0,2 | 0,8 a 1 |
 | R3 Nivel | 4 a 6,5 | 0,9 a 1 | 0,25 a 0,5 | 0,85 a 1 | 0 a 0,15 | 0,9 a 1 | 0 a 0,12 | 0,8 a 1 |
 | R4 Desbarbador | 8,5 a 14 | 0,7 a 0,95 | 0,1 a 0,25 | 0,55 a 0,85 | 0,55 a 0,95 | 0,65 a 0,9 | 0,15 a 0,5 | 0,7 a 1 |
 | R5 Destornillador | 5,5 a 9 | 0,5 a 0,78 | 0,08 a 0,2 | 0,25 a 0,5 | 0,7 a 1 | 0,3 a 0,55 | 0,4 a 0,75 | 0,12 a 0,45 |

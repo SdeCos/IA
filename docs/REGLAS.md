@@ -1,4 +1,4 @@
-# Clasificador geométrico manual: reglas-manuales-v4
+# Clasificador geométrico manual (reglas-manuales-v5)
 
 Este clasificador asigna nombres mediante **reglas escritas a mano sobre medidas
 explícitas de la silueta**. No entrena un árbol, no usa redes neuronales, vecinos,
@@ -46,7 +46,7 @@ definiciones completas están en `geometria.py`.
 
 | Regla y nombre | AR | S | C | E | K | F | A | W |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| R1 Metro | 1–2,2 | 0,9–1 | 0,65–0,9 | 0,75–1 | 0–0,25 | 0,85–1 | 0–0,2 | 0,8–1 |
+| R1 Metro | 1–2,2 | 0,9–1 | 0,65–0,9 | 0,75–1 | 0–0,36 | 0,85–1 | 0–0,2 | 0,8–1 |
 | R2 Cuter | 2–3,8 | 0,85–1 | 0,4–0,65 | 0,65–0,88 | 0–0,25 | 0,8–1 | 0–0,2 | 0,8–1 |
 | R3 Nivel | 4–6,5 | 0,9–1 | 0,25–0,5 | 0,85–1 | 0–0,15 | 0,9–1 | 0–0,12 | 0,8–1 |
 | R4 Desbarbador manual | 8,5–14 | 0,7–0,95 | 0,1–0,25 | 0,55–0,85 | 0,55–0,95 | 0,65–0,9 | 0,15–0,5 | 0,7–1 |
@@ -109,6 +109,13 @@ varios rasgos busca rechazar siluetas incompatibles, pero **no garantiza
 detectar toda mala segmentación ni rechazar cualquier objeto ajeno**: una
 regla rectangular puede parecerse a un nivel y una caja cuadrada a un metro.
 
+## Revisión v5 del metro recogido
+
+Dos capturas de desarrollo con la cinta recogida dieron un contraste entre
+extremos de 0,282 y 0,318. La carcasa casi cuadrada puede medirse sobre un eje
+distinto ante pequeñas variaciones del contorno. En R1, el límite superior de
+contraste pasa de 0,25 a 0,36, con la banda de abstención de 0,02.
+
 ## Revisión v4: continuidad de las extensiones del flexómetro
 
 Once capturas adicionales muestran extensiones intermedias y más largas. V3
@@ -141,10 +148,6 @@ medidas entre dos extensiones cercanas para verificar que las reglas no dejen
 un hueco; esto no simula imágenes ni demuestra continuidad física universal.
 Las once medidas nuevas están en `tests/fixtures/referencias_metro_v4.json`,
 un archivo exclusivo de pruebas que el reconocedor no consulta.
-
-Tras guardar tu trabajo, reinicia la web y comprueba `reglas-manuales-v4`.
-La siguiente tarea es una adquisición nueva reservada con varias herramientas,
-retiradas y repeticiones, sin retocar reglas con ese mismo conjunto.
 
 ## Histórico v3: aperturas y vistas de canto
 

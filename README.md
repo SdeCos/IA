@@ -5,8 +5,7 @@ El código está organizado por función en `src/herramientas/`, los ajustes
 globales en `config/` y los datos locales en `datos/`. Ejecuta los comandos de
 esta guía desde la raíz del repositorio.
 
-Consulta la [memoria de entrega en PDF](output/pdf/Memoria_Reto_07_borrador.pdf),
-el [enunciado del reto](docs/ENUNCIADO.md) y la
+Consulta la [memoria de entrega en PDF](output/pdf/Memoria_Reto_07_borrador.pdf) y la
 [checklist de entrega](docs/CHECKLIST_ENTREGA.md).
 
 ## Cómo funciona
@@ -307,7 +306,7 @@ separando desarrollo y prueba reservada; permite exportar JSON y dos CSV.
 Los parámetros guardados y las firmas protegen las correspondencias ante cambios.
 Si la segmentación cambia, abre la escena y revisa de nuevo. Las referencias
 incluyen sus píxeles en `datos/evaluaciones/`. El protocolo y las métricas
-están en el [plan de validación de la memoria](docs/MEMORIA.md#9-plan-de-validación).
+están en la [memoria de entrega](docs/MEMORIA_ENTREGA.md#9-medida-cuantitativa-de-aciertos-y-errores).
 
 ## Organización y scripts
 
@@ -334,7 +333,8 @@ IA/
 │   ├── resultados/            # Sesiones, medidas y predicciones
 │   ├── etiquetas/             # Etiquetas auxiliares anteriores
 │   └── evaluaciones/          # Referencias completas, creadas al guardar
-├── docs/                      # Enunciado, checklist, memoria, reglas y diagramas
+├── docs/                      # Fuente de la memoria, figuras, reglas, checklist y guion
+├── output/                    # PDF y ZIP de entrega
 ├── tests/                     # Pruebas automatizadas
 ├── respaldos/                 # Copias locales verificables, excluidas de Git
 └── .venv-web/                 # Entorno Python local, excluido de Git
@@ -356,7 +356,7 @@ y las [pruebas](tests/README.md).
 | `config/herramientas.json` | Catálogo de etiquetas. Añadir un nombre no crea una regla nueva. |
 | `datos/capturas/`, `datos/videos/`, `datos/resultados/`, `datos/etiquetas/` | Datos y trabajo guardado; conservan la identidad de las imágenes y la procedencia de las sesiones. |
 | `tests/` | Pruebas automatizadas, con archivos temporales y cámaras simuladas. |
-| `docs/` | Checklist, enunciado, borrador de memoria, reglas y diagramas. |
+| `docs/` | Fuente editable de la memoria y sus figuras, explicación de reglas, checklist y guion del vídeo. |
 | `src/herramientas/datos/entrega.py` / `config/entrega.json` | Validación y perfil opcional de clases y cantidades, creado al guardar en Entrega. |
 | `src/herramientas/vision/arbol.py` | Genera los diagramas de las reglas para la web. `./ejecutar.sh arbol` los exporta a `output/arboles/`. |
 | `src/herramientas/datos/evaluacion_escenas.py` | Métricas completas, referencias y separación por adquisición. |
@@ -415,6 +415,29 @@ un entorno virtual de otro ordenador: vuelve a crearlo con el instalador.
 
 ## Estado de la entrega
 
+### Contenido para entregar
+
+El repositorio incluye el código, la configuración, las dependencias, las pruebas
+y la memoria. La documentación que se conserva tiene estas funciones.
+
+| Documento | Uso |
+|---|---|
+| `docs/MEMORIA_ENTREGA.md` y `docs/figuras_memoria/` | Fuente editable de la memoria y las figuras necesarias para exportarla. |
+| `output/pdf/Memoria_Reto_07_borrador.pdf` | PDF actual, pendiente del enlace al vídeo y de la revisión final. |
+| `docs/REGLAS.md` | Explicación de los umbrales y de las mediciones utilizadas para revisarlos. |
+| `docs/GUION_VIDEO.md` | Procedimientos para grabar la demostración. |
+| `docs/CHECKLIST_ENTREGA.md` | Seguimiento del cierre de la entrega. |
+
+Para entregar una copia desde GitHub, guarda los cambios con un commit, súbelos
+y utiliza **Code → Download ZIP**. Ese archivo contendrá la versión publicada.
+Los datos de prueba se distribuyen por el enlace de Google Drive incluido en la
+memoria. La cámara y el reconocimiento funcionan con el código y la configuración
+del repositorio. Las fotografías, los vídeos y las referencias guardadas se
+necesitan para reproducir las pruebas con esos datos.
+
+`output/entrega/` contiene las copias ZIP de entrega preparadas localmente y está
+excluida de Git. Vuelve a generar la copia al modificar el PDF o el código.
+
 ### Archivos locales y Git
 
 Git conserva el código, las pruebas, la documentación, `config/configuracion.json`,
@@ -433,7 +456,7 @@ extrae el ZIP en una carpeta nueva y crea allí el entorno con `bash configurar_
 ### Evaluación
 
 El [perfil de entrega](config/entrega.json) espera una unidad de cada una de las
-siete clases del proyecto. Con `reglas-manuales-v4`, las cuatro escenas
+siete clases del proyecto. Con `reglas-manuales-v5`, las cuatro escenas
 reservadas del 17 de noviembre dieron 15 de 15 identificaciones correctas,
 sin omisiones ni falsas detecciones. El inventario y los avisos coincidieron
 con la referencia en las cuatro escenas. La

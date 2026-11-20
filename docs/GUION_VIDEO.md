@@ -1,6 +1,6 @@
 # Guion de la demo · Reto 07
 
-**Duración objetivo: 8 minutos.** El [enunciado del parcial](ENUNCIADO.md#10-entregables-y-pruebas) pide una demo de **7 a 10 minutos** con pruebas diseñadas por ti. Calcula 20–30 segundos para presentar el montaje y dedica el resto a las pruebas.
+**Duración objetivo: 8 minutos.** El enunciado del parcial pide una demo de **7 a 10 minutos** con pruebas diseñadas por ti. Calcula 20–30 segundos para presentar el montaje y dedica el resto a las pruebas.
 
 ## Antes de grabar
 

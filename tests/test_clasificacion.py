@@ -213,6 +213,21 @@ class ClasificacionTests(unittest.TestCase):
                 self.assertIn(fila['captura'], GRUPOS_DESARROLLO)
                 self.assertEqual(clasificar_objeto(fila)['clase_predicha'], 'Metro')
 
+    def test_metro_recogido_admite_contraste_con_carcasa_casi_cuadrada(self):
+        capturas = {
+            '20261117_134627_777517': (1.013699, .974101, .793905, .877268, .282159, .95, .123014, .969692),
+            '20261117_134654_029123': (1.025842, .973891, .815377, .868910, .318493, .95, .139861, .946323),
+        }
+        for captura, valores in capturas.items():
+            with self.subTest(captura=captura):
+                self.assertIn(captura, GRUPOS_DESARROLLO)
+                rasgos = dict(zip(CARACTERISTICAS, valores))
+                salida = clasificar_objeto(rasgos)
+                self.assertEqual(salida['clase_predicha'], 'Metro')
+                self.assertEqual(salida['regla'], 'R1')
+                rasgos['contraste_extremos'] = .43
+                self.assertEqual(clasificar_objeto(rasgos)['clase_predicha'], 'Desconocido')
+
     def test_transicion_cinta_plana_sin_hueco_entre_reglas(self):
         # Interpolación sintética entre medidas de dos extensiones próximas.
         # Comprueba continuidad de las reglas, no simula píxeles ni demuestra

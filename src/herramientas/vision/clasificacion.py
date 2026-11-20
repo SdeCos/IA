@@ -9,11 +9,11 @@ import math
 from numbers import Real
 
 
-VERSION_CLASIFICADOR = "reglas-manuales-v4"
+VERSION_CLASIFICADOR = "reglas-manuales-v5"
 VERSION_GEOMETRIA = "geometria-v1"
 BANDA_AR = .15
 BANDA_COCIENTES = .02
-# Procedencias consultadas en las revisiones v1–v4; no son prueba independiente.
+# Procedencias consultadas para elegir o ajustar los umbrales.
 GRUPOS_DESARROLLO = (
     "20261016_113207_730520",
     "20261016_113218_711279",
@@ -70,6 +70,8 @@ GRUPOS_DESARROLLO = (
     "20261104_112511_434291",
     "20261104_112518_681229",
     "20261104_112522_652345",
+    "20261117_134627_777517",
+    "20261117_134654_029123",
     "video_2eaa614e1f7fa5ba99870b79f3a729103af094aabe85cf620c98fa42b98aca91",
 )
 
@@ -97,7 +99,7 @@ NOMBRES = {
 _REGLAS = (
     ("R1", "Metro", "cuerpo compacto casi cuadrado y convexo, con extremos similares", (
         (1.0, 2.2), (.90, 1.0), (.65, .90), (.75, 1.0),
-        (0.0, .25), (.85, 1.0), (0.0, .20), (.80, 1.0))),
+        (0.0, .36), (.85, 1.0), (0.0, .20), (.80, 1.0))),
     ("R2", "Cuter", "cuerpo convexo de longitud moderada, ancho en el centro y casi simétrico", (
         (2.0, 3.8), (.85, 1.0), (.40, .65), (.65, .88),
         (0.0, .25), (.80, 1.0), (0.0, .20), (.80, 1.0))),
@@ -170,7 +172,7 @@ def snapshot_reglas():
              ]}
             for codigo, clase, descripcion, intervalos in _REGLAS
         ],
-        "limitacion": "Reglas revisadas con capturas etiquetadas de aperturas y vistas de canto; todos los grupos consultados son desarrollo. Falta evaluación independiente. Otras siluetas similares pueden cumplir estas reglas; no se garantizan todas las configuraciones ni oclusiones.",
+        "limitacion": "Los grupos consultados al ajustar umbrales se reservan para desarrollo. Siluetas similares pueden cumplir las mismas reglas. El alcance depende de las configuraciones y oclusiones evaluadas.",
     }
 
 

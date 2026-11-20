@@ -32,6 +32,7 @@ htmlcov/
 # Artefactos temporales de trabajo
 /tmp/
 /output/arboles/
+/output/entrega/
 *.log
 
 
